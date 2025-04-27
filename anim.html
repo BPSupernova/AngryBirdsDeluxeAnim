@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Angry Birds Anim</title>
+    <script id="vshader" type="x-shader/x-vertex">
+        attribute vec4 vPosition;
+        attribute vec3 vNormal;
+        attribute vec4 vColor;
+        attribute vec2 vTexCoord;
+
+        uniform mat4 modelMatrix, viewMatrix, projMatrix;
+        
+        varying vec3 fNormal;
+        varying vec4 fColor;
+        varying vec2 fTexCoord;
+
+        void main() {
+            fNormal = vNormal;
+            fColor = vColor;
+            fTexCoord = vTexCoord;
+            gl_Position = projMatrix * viewMatrix * modelMatrix * vPosition;
+        }
+    </script>
+
+    <script id="fshader" type="x-shader/x-fragment">
+        precision mediump float;
+        
+        varying vec3 fNormal;
+        varying vec4 fColor;
+        varying vec2 fTexCoord;
+        
+        uniform sampler2D tex0;
+        uniform bool useTexture;
+        
+        void main() {
+            if (useTexture && fTexCoord.x >= 0.0) {
+                gl_FragColor = texture2D(tex0, fTexCoord);
+            } else {
+                gl_FragColor = fColor;
+            }
+        }
+    </script>
+
+    <script type="text/javascript" src="lib/webgl-utils.js"></script>
+    <script type="text/javascript" src="lib/initShaders.js"></script>
+    <script type="text/javascript" src="lib/MV.js"></script>
+    <script type="text/javascript" src="anim.js"></script>
+</head>
+
+<body onload="main()">
+    <canvas id="webgl" width="800" height="600">
+        Please use a browser that supports the "canvas" tag.
+    </canvas>
+</body>
+</html>
