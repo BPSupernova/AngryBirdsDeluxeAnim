@@ -25,8 +25,11 @@ class Model {
         this.mtlPath = mtlPath;
         
         // Load the model
+        if (objPath !== undefined) {
         this.loadModel();
+        }
     }
+
 
     updateModelMatrix() {
         this.modelMatrix = mult(
@@ -336,10 +339,7 @@ function main() {
     car2.updateModelMatrix();
     models.push(car2);
 
-    const cube = new Model(
-        "https://web.cs.wpi.edu/~jmcuneo/cs4731/project3/car.obj",
-        "https://web.cs.wpi.edu/~jmcuneo/cs4731/project3/car.mtl"
-    );
+    const cube = new Model();
     cube.createManualObject(setCubePoints());
     models.push(cube);
 
