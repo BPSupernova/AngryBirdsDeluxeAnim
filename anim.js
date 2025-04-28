@@ -303,8 +303,8 @@ function main() {
     gl.useProgram(program);
     
     // Set up matrices
-    viewMatrix = lookAt(vec3(0, 5, 10), vec3(0, 0, 0), vec3(0, 1, 0));
-    projMatrix = perspective(45, canvas.width/canvas.height, 0.1, 100);
+    viewMatrix = lookAt(vec3(0, 5, 10), vec3(0, 3, 0), vec3(0, 1, 0));
+    projMatrix = perspective(45, canvas.width/canvas.height, 0.1, 400);
     
     gl.uniformMatrix4fv(gl.getUniformLocation(program, "viewMatrix"), false, flatten(viewMatrix));
     gl.uniformMatrix4fv(gl.getUniformLocation(program, "projMatrix"), false, flatten(projMatrix));
@@ -320,19 +320,19 @@ function main() {
     canvas.addEventListener('click', collapseTower);
 
     // Create model
-    const car = new Model(
-        "english_flag/obj/objFlag.obj",
-        "english_flag/obj/objFlag.mtl"
+    const red = new Model(
+        "RedAngryBird/The_red_angry_bird_0428193917_texture.obj",
+        "RedAngryBird/The_red_angry_bird_0428193917_texture.mtl"
     );
-    models.push(car);
+    models.push(red);
     
     // Example of creating a second model with different transforms
     const car2 = new Model(
-        "https://web.cs.wpi.edu/~jmcuneo/cs4731/project3/car.obj",
-        "https://web.cs.wpi.edu/~jmcuneo/cs4731/project3/car.mtl"
+        "Pig/16433_Pig.obj",
+        "Pig/Blank.mtl"
     );
-    car2.position = vec3(5, 0, 0);
-    car2.rotation = vec3(0, 45, 0);
+    car2.position = vec3(2, 4.8, -5);
+    car2.rotation = vec3(-90, 0, 0);
     car2.scale = vec3(0.8, 0.8, 0.8);
     car2.updateModelMatrix();
     models.push(car2);
