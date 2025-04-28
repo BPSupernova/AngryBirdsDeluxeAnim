@@ -1,4 +1,4 @@
-let gl, program;
+let gl, program, canvas;
 let modelMatrix, viewMatrix, projMatrix;
 let models = [];
 let lightPosition = vec4(5.0, 10.0, 5.0, 1.0);
@@ -250,6 +250,13 @@ class Model {
         return normal;
     }
 
+    createManualObject(objectInfo) {
+        this.vertices = objectInfo[0];
+        this.colors = objectInfo[1];
+        this.normals = objectInfo[2];
+        this.loaded = true;
+    }
+
     render() {
         if (!this.loaded || this.vertices.length === 0) return;
         
@@ -281,7 +288,7 @@ class Model {
 }
 
 function main() {
-    const canvas = document.getElementById('webgl');
+    canvas = document.getElementById('webgl');
     gl = WebGLUtils.setupWebGL(canvas);
     
     if (!gl) {
@@ -328,6 +335,15 @@ function main() {
     car2.scale = vec3(0.8, 0.8, 0.8);
     car2.updateModelMatrix();
     models.push(car2);
+
+    const cube = new Model(
+        "https://web.cs.wpi.edu/~jmcuneo/cs4731/project3/car.obj",
+        "https://web.cs.wpi.edu/~jmcuneo/cs4731/project3/car.mtl"
+    );
+    cube.createManualObject(setCubePoints());
+    models.push(cube);
+
+
     
     // Animation loop
     function render() {
@@ -349,6 +365,52 @@ function main() {
     
     render();
 }
+
+let points = [];
+let colors = [];
+let normals = [];
+
+//create a cube
+function setCubePoints()
+{
+    points = [];
+    colors = [];
+    normals = [];
+    quad( 1, 0, 3, 2 );
+    quad( 2, 3, 7, 6 );
+    quad( 3, 0, 4, 7 );
+    quad( 6, 5, 1, 2 );
+    quad( 4, 5, 6, 7 );
+    quad( 5, 4, 0, 1 );
+    console.log("POINTSSS", points);
+
+    //return all info needed to draw cube
+    return [points, colors, normals];
+}
+
+function quad(a, b, c, d)
+{
+    let vertices = [
+        vec4( -0.5, -0.5,  0.5, 1.0 ),
+        vec4( -0.5,  0.5,  0.5, 1.0 ),
+        vec4(  0.5,  0.5,  0.5, 1.0 ),
+        vec4(  0.5, -0.5,  0.5, 1.0 ),
+        vec4( -0.5, -0.5, -0.5, 1.0 ),
+        vec4( -0.5,  0.5, -0.5, 1.0 ),
+        vec4(  0.5,  0.5, -0.5, 1.0 ),
+        vec4(  0.5, -0.5, -0.5, 1.0 )
+    ];
+
+    let indices = [ a, b, c, a, c, d ];
+
+    for ( let i = 0; i < indices.length; ++i ) {
+        points.push( vertices[indices[i]] );
+        colors.push([ 0.67, 0.75, 0.13, 1.0 ]);
+        normals.push(vec3(vertices[indices[i]][0], vertices[indices[i]][1], vertices[indices[i]][2]))
+    }
+}
+
+
 
 // Initialize shaders with new versions that include lighting
 function initShaders() {
@@ -445,4 +507,24 @@ function initShaders() {
         console.error("Program link error: " + gl.getProgramInfoLog(program));
         return;
     }
+}
+
+
+function pushData(attName) {
+    let attrib = gl.getAttribLocation(program, attName);
+    gl.vertexAttribPointer(attrib, 4, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(attrib);
+}
+
+//Create buffer for data
+function createBuffer(data) {
+    let buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(data), gl.STATIC_DRAW);
+    return buffer;
+}
+
+function setUniformMatrix(name, data) {
+    let matrixLoc = gl.getUniformLocation(program, name);
+    gl.uniformMatrix4fv(matrixLoc, false, flatten(data));
 }
