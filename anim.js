@@ -142,9 +142,7 @@ class Model {
         this.mtlPath = mtlPath;
         
         // Load the model
-        if (objPath !== undefined) {
         this.loadModel();
-        }
     }
 
 
@@ -370,13 +368,6 @@ class Model {
         return normal;
     }
 
-    createManualObject(objectInfo) {
-        this.vertices = objectInfo[0];
-        this.colors = objectInfo[1];
-        this.normals = objectInfo[2];
-        this.loaded = true;
-    }
-
     render() {
         if (!this.loaded || this.vertices.length === 0) return;
         
@@ -456,13 +447,6 @@ function main() {
     car2.scale = vec3(0.8, 0.8, 0.8);
     car2.updateModelMatrix();
     models.push(car2);
-
-    // const cube = new Model();
-    // cube.createManualObject(setCubePoints());
-    // cube.position = vec3(-1, -1, 0);
-    // cube.scale = vec3(1, 3, 1);
-    // cube.updateModelMatrix();
-    // models.push(cube);
 
     const slingShot = new Slingshot(vec3(-3, -1, 0), vec3(0, 0, 0), vec3(0.4, 0.4, 0.4));
     slingShot.createSlingshotBase();
