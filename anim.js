@@ -3,6 +3,11 @@ let modelMatrix, viewMatrix, projMatrix;
 let models = [];
 let lightPosition = vec4(5.0, 10.0, 5.0, 1.0);
 
+let tower;
+let isTowerFalling = false;
+let fallStartTime = 0;
+const G = 9.8;
+
 class Model {
     constructor(objPath, mtlPath) {
         this.vertices = [];
@@ -311,6 +316,9 @@ function main() {
     gl.uniform4fv(gl.getUniformLocation(program, "specularProduct"), flatten([1.0, 1.0, 1.0, 1.0]));
     gl.uniform1f(gl.getUniformLocation(program, "shininess"), 100.0);
     
+    createTower();
+    canvas.addEventListener('click', collapseTower);
+
     // Create model
     const car = new Model(
         "english_flag/obj/objFlag.obj",
@@ -330,9 +338,12 @@ function main() {
     models.push(car2);
     
     // Animation loop
-    function render() {
+    function render(currentTime = 0) {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         
+        if (isTowerFalling) tower.update(currentTime);
+        tower.render();
+
         // Render all models
         for (const model of models) {
             model.render();
