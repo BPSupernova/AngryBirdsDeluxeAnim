@@ -43,9 +43,9 @@ class Slingshot{
 
     createSlingshotBase() {
         this.updateModelMatrix();
-        let middleTransform = createModelMatrix(vec3(0, 0.8, 0), vec3(0, 0, 0), vec3(0.5, 0.5, 0.5));
-        let leftTopTransform = createModelMatrix(vec3(0, 0.8, 0), vec3(0, 0, 0), vec3(0.5, 0.5, 0.5));
-        let rightTopTransform = createModelMatrix(vec3(2, 0.8, 0), vec3(0, 0, 0), vec3(0.5, 0.5, 0.5));
+        let middleTransform = createModelMatrix(vec3(0, 3, 0), vec3(0, 0, 90), vec3(1, 1, 1));
+        let leftTopTransform = createModelMatrix(vec3(2, 3, 0), vec3(0, 0, -90), vec3(1, 1, 1));
+        let rightTopTransform = createModelMatrix(vec3(2, -3, 0), vec3(0, 0, -90), vec3(1, 1, 1));
 
         let base = new Block(this.modelMatrix);
         let middle = new Block(middleTransform);
@@ -464,7 +464,7 @@ function main() {
     // cube.updateModelMatrix();
     // models.push(cube);
 
-    const slingShot = new Slingshot(vec3(-3, -1, 0), vec3(0, 0, 0), vec3(1, 3, 1));
+    const slingShot = new Slingshot(vec3(-3, -1, 0), vec3(0, 0, 0), vec3(0.4, 0.4, 0.4));
     slingShot.createSlingshotBase();
     models.push(slingShot);
 
@@ -531,14 +531,14 @@ function setCubePoints()
 function quad(a, b, c, d)
 {
     let vertices = [
-        vec4( -0.5, -0.5,  0.5, 1.0 ),
-        vec4( -0.5,  0.5,  0.5, 1.0 ),
-        vec4(  0.5,  0.5,  0.5, 1.0 ),
-        vec4(  0.5, -0.5,  0.5, 1.0 ),
-        vec4( -0.5, -0.5, -0.5, 1.0 ),
-        vec4( -0.5,  0.5, -0.5, 1.0 ),
-        vec4(  0.5,  0.5, -0.5, 1.0 ),
-        vec4(  0.5, -0.5, -0.5, 1.0 )
+        vec4( -0.5, -2.5,  0.5, 1.0 ),
+        vec4( -0.5,  2.5,  0.5, 1.0 ),
+        vec4(  0.5,  2.5,  0.5, 1.0 ),
+        vec4(  0.5, -2.5,  0.5, 1.0 ),
+        vec4( -0.5, -2.5, -0.5, 1.0 ),
+        vec4( -0.5,  2.5, -0.5, 1.0 ),
+        vec4(  0.5,  2.5, -0.5, 1.0 ),
+        vec4(  0.5, -2.5, -0.5, 1.0 )
     ];
 
     let indices = [ a, b, c, a, c, d ];
