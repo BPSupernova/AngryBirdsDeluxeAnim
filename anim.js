@@ -3,6 +3,123 @@ let modelMatrix, viewMatrix, projMatrix;
 let models = [];
 let lightPosition = vec4(5.0, 10.0, 5.0, 1.0);
 
+
+class Slingshot{
+    constructor(position, rotation, scale) {
+        this.position = position;
+        this.rotation = rotation;
+        this.scale = scale;
+        this.modelMatrix = mat4();
+
+        this.vertices = [];
+        this.colors = [];
+        this.normals = [];
+
+        this.hierarchyMatrix = mat4();
+        this.stack = [];
+        this.base = [];
+    }
+
+
+    updateModelMatrix() {
+        this.modelMatrix = mult(
+            translate(this.position[0], this.position[1], this.position[2]),
+            mult(
+                rotateZ(this.rotation[2]),
+                mult(
+                    rotateY(this.rotation[1]),
+                    mult(
+                        rotateX(this.rotation[0]),
+                        scalem(this.scale[0], this.scale[1], this.scale[2])
+                    )
+                )
+            )
+        );
+    }
+
+
+
+
+
+    createSlingshotBase() {
+        this.updateModelMatrix();
+        let middleTransform = createModelMatrix(vec3(0, 0.8, 0), vec3(0, 0, 0), vec3(0.5, 0.5, 0.5));
+        let leftTopTransform = createModelMatrix(vec3(0, 0.8, 0), vec3(0, 0, 0), vec3(0.5, 0.5, 0.5));
+        let rightTopTransform = createModelMatrix(vec3(2, 0.8, 0), vec3(0, 0, 0), vec3(0.5, 0.5, 0.5));
+
+        let base = new Block(this.modelMatrix);
+        let middle = new Block(middleTransform);
+        let leftTop = new Block(leftTopTransform);
+        let rightTop = new Block(rightTopTransform);
+
+        base.children.push(middle);
+        middle.children.push(leftTop);
+        middle.children.push(rightTop);
+
+        this.base = base;
+    }
+
+    hierarchy(block) {
+        this.stack.push(this.hierarchyMatrix);
+        this.hierarchyMatrix = mult(this.hierarchyMatrix, block.transformation);
+
+        //If node is a model, apply to model matrix
+        block.render(this.hierarchyMatrix);
+
+        //Continue for each child of the node
+        for(let i = 0; i < block.children.length; i++) {
+            this.hierarchy(block.children[i]);
+        }
+
+        //Remove transformation from hierarchy matrix once model is no longer on stack
+        this.hierarchyMatrix = this.stack.pop();
+    }
+
+    render() {
+        this.hierarchy(this.base);
+    }
+}
+
+class Block {
+    constructor(transformation) {
+        let block = setCubePoints();
+        this.vertices = block[0];
+        this.colors = block[1];
+        this.normals = block[2];
+        this.children = [];
+        this.transformation = transformation;
+    }
+
+    render(modelMatrix) {
+        // Set model matrix for this model's transforms
+        gl.uniformMatrix4fv(
+            gl.getUniformLocation(program, "modelMatrix"),
+            false,
+            flatten(modelMatrix)
+        );
+
+        // Set up buffers
+        this.setupBuffer('vPosition', this.vertices, 4);
+        this.setupBuffer('vNormal', this.normals, 3);
+        this.setupBuffer('vColor', this.colors, 4);
+
+        // Draw the model
+        gl.drawArrays(gl.TRIANGLES, 0, this.vertices.length);
+    }
+
+    setupBuffer(attributeName, data, size) {
+        const buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, flatten(data), gl.STATIC_DRAW);
+
+        const location = gl.getAttribLocation(program, attributeName);
+        gl.vertexAttribPointer(location, size, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(location);
+    }
+
+}
+
+
 class Model {
     constructor(objPath, mtlPath) {
         this.vertices = [];
@@ -290,6 +407,7 @@ class Model {
     }
 }
 
+
 function main() {
     canvas = document.getElementById('webgl');
     gl = WebGLUtils.setupWebGL(canvas);
@@ -339,9 +457,16 @@ function main() {
     car2.updateModelMatrix();
     models.push(car2);
 
-    const cube = new Model();
-    cube.createManualObject(setCubePoints());
-    models.push(cube);
+    // const cube = new Model();
+    // cube.createManualObject(setCubePoints());
+    // cube.position = vec3(-1, -1, 0);
+    // cube.scale = vec3(1, 3, 1);
+    // cube.updateModelMatrix();
+    // models.push(cube);
+
+    const slingShot = new Slingshot(vec3(-3, -1, 0), vec3(0, 0, 0), vec3(1, 3, 1));
+    slingShot.createSlingshotBase();
+    models.push(slingShot);
 
 
     
@@ -370,6 +495,22 @@ let points = [];
 let colors = [];
 let normals = [];
 
+function createModelMatrix(position, rotation, scale) {
+    return mult(
+        translate(position[0], position[1], position[2]),
+        mult(
+            rotateZ(rotation[2]),
+            mult(
+                rotateY(rotation[1]),
+                mult(
+                    rotateX(rotation[0]),
+                    scalem(scale[0], scale[1], scale[2])
+                )
+            )
+        )
+    );
+}
+
 //create a cube
 function setCubePoints()
 {
@@ -382,7 +523,6 @@ function setCubePoints()
     quad( 6, 5, 1, 2 );
     quad( 4, 5, 6, 7 );
     quad( 5, 4, 0, 1 );
-    console.log("POINTSSS", points);
 
     //return all info needed to draw cube
     return [points, colors, normals];
@@ -405,7 +545,7 @@ function quad(a, b, c, d)
 
     for ( let i = 0; i < indices.length; ++i ) {
         points.push( vertices[indices[i]] );
-        colors.push([ 0.67, 0.75, 0.13, 1.0 ]);
+        colors.push([ 0.4, 0.2, 0.0, 1.0 ]);
         normals.push(vec3(vertices[indices[i]][0], vertices[indices[i]][1], vertices[indices[i]][2]))
     }
 }
