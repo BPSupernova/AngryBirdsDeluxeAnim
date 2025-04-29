@@ -13,6 +13,7 @@ class Model {
         this.vertices = [];
         this.normals = [];
         this.colors = [];
+        this.weights = [];
         this.loaded = false;
         
         // Materials and groups
@@ -234,6 +235,11 @@ class Model {
             this.colors.push(materialColor);
             this.colors.push(materialColor);
             this.colors.push(materialColor);
+
+            //Add dummy weights
+            this.weights.push(vec4(0.0, 0.0, 0.0, 0.0));
+            this.weights.push(vec4(0.0, 0.0, 0.0, 0.0));
+            this.weights.push(vec4(0.0, 0.0, 0.0, 0.0));
             
             vertCount += 3;
         }
@@ -270,6 +276,7 @@ class Model {
         setupBuffer('vPosition', this.vertices, 4);
         setupBuffer('vNormal', this.normals, 3);
         setupBuffer('vColor', this.colors, 4);
+        setupBuffer('vWeight', this.weights, 4);
         
         // Draw the model
         gl.drawArrays(gl.TRIANGLES, 0, this.vertices.length);
@@ -332,15 +339,25 @@ function main() {
     car2.updateModelMatrix();
     models.push(car2);
 
-    const slingShot = new Slingshot(vec3(-3, -1, 0), vec3(0, 0, 0), vec3(0.4, 0.4, 0.4));
-    slingShot.createSlingshotBase();
-    models.push(slingShot);
+    const slingshot = new Slingshot(vec3(-3, -1, -5), vec3(0, 0, 0), vec3(0.4, 0.4, 0.4));
+    slingshot.createSlingshotBase();
+    models.push(slingshot);
 
 
-    
+    let slingshotBend = 0;
     // Animation loop
     function render(currentTime = 0) {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        //set bone matrices for bending slingshot
+        let boneMatrix0 = mat4();
+        let boneMatrix1 = mult(translate(0, 0, slingshotBend), boneMatrix0);
+        let boneMatrix2 = mat4();
+        slingshotBend += 0.05;
+
+        setUniformMatrix("boneMatrix0", boneMatrix0);
+        setUniformMatrix("boneMatrix1", boneMatrix1);
+        setUniformMatrix("boneMatrix2", boneMatrix2);
 
         
         if (isTowerFalling) tower.update(currentTime);
@@ -362,7 +379,7 @@ function main() {
     
     render();
 }
-
+//creates model matrix based on given transformations
 function createModelMatrix(position, rotation, scale) {
     return mult(
         translate(position[0], position[1], position[2]),
@@ -379,6 +396,7 @@ function createModelMatrix(position, rotation, scale) {
     );
 }
 
+//creates buffer based on given data and name
 function setupBuffer(attributeName, data, size) {
     const buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
@@ -387,4 +405,9 @@ function setupBuffer(attributeName, data, size) {
     const location = gl.getAttribLocation(program, attributeName);
     gl.vertexAttribPointer(location, size, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(location);
+}
+
+function setUniformMatrix(name, data) {
+    let matrixLoc = gl.getUniformLocation(program, name);
+    gl.uniformMatrix4fv(matrixLoc, false, flatten(data));
 }

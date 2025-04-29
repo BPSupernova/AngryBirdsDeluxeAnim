@@ -7,6 +7,7 @@
         attribute vec4 vPosition;
         attribute vec3 vNormal;
         attribute vec4 vColor;
+        attribute vec4 vWeight;
 
         uniform mat4 modelMatrix;
         uniform mat4 viewMatrix;
@@ -18,7 +19,7 @@
         varying vec3 fView;
         varying vec4 fColor;
 
-        attribute vec4 weights;
+
 
         uniform int isBand;
         uniform mat4 boneMatrix0;
@@ -26,9 +27,9 @@
         uniform mat4 boneMatrix2;
 
         void main() {
-            mat4 bone0 = weights[0] * boneMatrix0;
-            mat4 bone1 = weights[1] * boneMatrix1;
-            mat4 bone2 = weights[2] * boneMatrix2;
+            mat4 bone0 = vWeight[0] * boneMatrix0;
+            mat4 bone1 = vWeight[1] * boneMatrix1;
+            mat4 bone2 = vWeight[2] * boneMatrix2;
             vec4 bentPoint = (bone0 * vPosition) + (bone1 * vPosition) + (bone2 * vPosition);
 
             vec4 worldPos = modelMatrix * vPosition;
@@ -40,7 +41,7 @@
             fColor = vColor;
 
             if (isBand == 1) {
-                gl_Position = projMatrix * viewMatrix * worldPos;
+                gl_Position = projMatrix * viewMatrix * modelMatrix * bentPoint;
             }
             else {
                 gl_Position = projMatrix * viewMatrix * worldPos;
