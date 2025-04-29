@@ -7,19 +7,38 @@
         attribute vec4 vPosition;
         attribute vec3 vNormal;
         attribute vec4 vColor;
-        attribute vec2 vTexCoord;
 
-        uniform mat4 modelMatrix, viewMatrix, projMatrix;
-        
+        uniform mat4 modelMatrix;
+        uniform mat4 viewMatrix;
+        uniform mat4 projMatrix;
+        uniform vec4 lightPosition;
+
         varying vec3 fNormal;
+        varying vec3 fLight;
+        varying vec3 fView;
         varying vec4 fColor;
-        varying vec2 fTexCoord;
+
+        attribute vec4 weights;
+
+        uniform mat4 boneMatrix0;
+        uniform mat4 boneMatrix1;
+        uniform mat4 boneMatrix2;
 
         void main() {
-            fNormal = vNormal;
+            mat4 bone0 = weights[0] * boneMatrix0;
+            mat4 bone1 = weights[1] * boneMatrix1;
+            mat4 bone2 = weights[2] * boneMatrix2;
+            vec4 bentPoint = (bone0 * vPosition) + (bone1 * vPosition) + (bone2 * vPosition);
+
+            vec4 worldPos = modelMatrix * vPosition;
+            fNormal = (modelMatrix * vec4(vNormal, 0.0)).xyz;
+
+            fLight = lightPosition.xyz - worldPos.xyz;
+            fView = -worldPos.xyz;
+
             fColor = vColor;
-            fTexCoord = vTexCoord;
-            gl_Position = projMatrix * viewMatrix * modelMatrix * vPosition;
+
+            gl_Position = projMatrix * viewMatrix * worldPos;
         }
     </script>
 
@@ -27,18 +46,34 @@
         precision mediump float;
         
         varying vec3 fNormal;
+        varying vec3 fLight;
+        varying vec3 fView;
         varying vec4 fColor;
-        varying vec2 fTexCoord;
-        
-        uniform sampler2D tex0;
-        uniform bool useTexture;
-        
+
+        uniform vec4 ambientProduct;
+        uniform vec4 diffuseProduct;
+        uniform vec4 specularProduct;
+        uniform float shininess;
+
         void main() {
-            if (useTexture && fTexCoord.x >= 0.0) {
-                gl_FragColor = texture2D(tex0, fTexCoord);
-            } else {
-                gl_FragColor = fColor;
-            }
+            // Normalize vectors
+            vec3 N = normalize(fNormal);
+            vec3 L = normalize(fLight);
+            vec3 V = normalize(fView);
+            vec3 H = normalize(L + V);
+
+            // Calculate lighting components
+            float Kd = max(dot(L, N), 0.0);
+            vec4 diffuse = Kd * diffuseProduct * fColor;
+
+            float Ks = pow(max(dot(N, H), 0.0), shininess);
+            vec4 specular = Ks * specularProduct;
+
+            vec4 ambient = ambientProduct * fColor;
+
+            // Combine lighting components
+            gl_FragColor = ambient + diffuse + specular;
+            gl_FragColor.a = 1.0;
         }
     </script>
 

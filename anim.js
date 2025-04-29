@@ -291,7 +291,7 @@ function main() {
     gl.enable(gl.DEPTH_TEST);
     
     // Initialize shaders with the updated versions
-    initShaders();
+    program = initShaders(gl, "vshader", "fshader");
     gl.useProgram(program);
     
     // Set up matrices
@@ -383,106 +383,4 @@ function setupBuffer(attributeName, data, size) {
     const location = gl.getAttribLocation(program, attributeName);
     gl.vertexAttribPointer(location, size, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(location);
-}
-
-
-
-
-
-
-// Initialize shaders with new versions that include lighting
-function initShaders() {
-    const vertexShader = `
-        attribute vec4 vPosition;
-        attribute vec3 vNormal;
-        attribute vec4 vColor;
-        
-        uniform mat4 modelMatrix;
-        uniform mat4 viewMatrix;
-        uniform mat4 projMatrix;
-        uniform vec4 lightPosition;
-        
-        varying vec3 fNormal;
-        varying vec3 fLight;
-        varying vec3 fView;
-        varying vec4 fColor;
-        
-        void main() {
-            // Transform vertex and normal to world coordinates
-            vec4 worldPos = modelMatrix * vPosition;
-            fNormal = (modelMatrix * vec4(vNormal, 0.0)).xyz;
-            
-            // Calculate light and view directions
-            fLight = lightPosition.xyz - worldPos.xyz;
-            fView = -worldPos.xyz;
-            
-            // Pass color to fragment shader
-            fColor = vColor;
-            
-            // Apply view and projection transforms
-            gl_Position = projMatrix * viewMatrix * worldPos;
-        }
-    `;
-    
-    const fragmentShader = `
-        precision mediump float;
-        
-        varying vec3 fNormal;
-        varying vec3 fLight;
-        varying vec3 fView;
-        varying vec4 fColor;
-        
-        uniform vec4 ambientProduct;
-        uniform vec4 diffuseProduct;
-        uniform vec4 specularProduct;
-        uniform float shininess;
-        
-        void main() {
-            // Normalize vectors
-            vec3 N = normalize(fNormal);
-            vec3 L = normalize(fLight);
-            vec3 V = normalize(fView);
-            vec3 H = normalize(L + V);
-            
-            // Calculate lighting components
-            float Kd = max(dot(L, N), 0.0);
-            vec4 diffuse = Kd * diffuseProduct * fColor;
-            
-            float Ks = pow(max(dot(N, H), 0.0), shininess);
-            vec4 specular = Ks * specularProduct;
-            
-            vec4 ambient = ambientProduct * fColor;
-            
-            // Combine lighting components
-            gl_FragColor = ambient + diffuse + specular;
-            gl_FragColor.a = 1.0;
-        }
-    `;
-    
-    // Compile shaders
-    const vs = gl.createShader(gl.VERTEX_SHADER);
-    gl.shaderSource(vs, vertexShader);
-    gl.compileShader(vs);
-    if (!gl.getShaderParameter(vs, gl.COMPILE_STATUS)) {
-        console.error("VS error: " + gl.getShaderInfoLog(vs));
-        return;
-    }
-    
-    const fs = gl.createShader(gl.FRAGMENT_SHADER);
-    gl.shaderSource(fs, fragmentShader);
-    gl.compileShader(fs);
-    if (!gl.getShaderParameter(fs, gl.COMPILE_STATUS)) {
-        console.error("FS error: " + gl.getShaderInfoLog(fs));
-        return;
-    }
-    
-    // Create program
-    program = gl.createProgram();
-    gl.attachShader(program, vs);
-    gl.attachShader(program, fs);
-    gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-        console.error("Program link error: " + gl.getProgramInfoLog(program));
-        return;
-    }
 }
