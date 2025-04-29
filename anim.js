@@ -267,22 +267,12 @@ class Model {
         );
         
         // Set up buffers
-        this.setupBuffer('vPosition', this.vertices, 4);
-        this.setupBuffer('vNormal', this.normals, 3);
-        this.setupBuffer('vColor', this.colors, 4);
+        setupBuffer('vPosition', this.vertices, 4);
+        setupBuffer('vNormal', this.normals, 3);
+        setupBuffer('vColor', this.colors, 4);
         
         // Draw the model
         gl.drawArrays(gl.TRIANGLES, 0, this.vertices.length);
-    }
-
-    setupBuffer(attributeName, data, size) {
-        const buffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-        gl.bufferData(gl.ARRAY_BUFFER, flatten(data), gl.STATIC_DRAW);
-        
-        const location = gl.getAttribLocation(program, attributeName);
-        gl.vertexAttribPointer(location, size, gl.FLOAT, false, 0, 0);
-        gl.enableVertexAttribArray(location);
     }
 }
 
@@ -369,10 +359,6 @@ function main() {
     render();
 }
 
-let points = [];
-let colors = [];
-let normals = [];
-
 function createModelMatrix(position, rotation, scale) {
     return mult(
         translate(position[0], position[1], position[2]),
@@ -389,44 +375,18 @@ function createModelMatrix(position, rotation, scale) {
     );
 }
 
-//create a cube
-function setCubePoints()
-{
-    points = [];
-    colors = [];
-    normals = [];
-    quad( 1, 0, 3, 2 );
-    quad( 2, 3, 7, 6 );
-    quad( 3, 0, 4, 7 );
-    quad( 6, 5, 1, 2 );
-    quad( 4, 5, 6, 7 );
-    quad( 5, 4, 0, 1 );
+function setupBuffer(attributeName, data, size) {
+    const buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(data), gl.STATIC_DRAW);
 
-    //return all info needed to draw cube
-    return [points, colors, normals];
+    const location = gl.getAttribLocation(program, attributeName);
+    gl.vertexAttribPointer(location, size, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(location);
 }
 
-function quad(a, b, c, d)
-{
-    let vertices = [
-        vec4( -0.5, -2.5,  0.5, 1.0 ),
-        vec4( -0.5,  2.5,  0.5, 1.0 ),
-        vec4(  0.5,  2.5,  0.5, 1.0 ),
-        vec4(  0.5, -2.5,  0.5, 1.0 ),
-        vec4( -0.5, -2.5, -0.5, 1.0 ),
-        vec4( -0.5,  2.5, -0.5, 1.0 ),
-        vec4(  0.5,  2.5, -0.5, 1.0 ),
-        vec4(  0.5, -2.5, -0.5, 1.0 )
-    ];
 
-    let indices = [ a, b, c, a, c, d ];
 
-    for ( let i = 0; i < indices.length; ++i ) {
-        points.push( vertices[indices[i]] );
-        colors.push([ 0.4, 0.2, 0.0, 1.0 ]);
-        normals.push(vec3(vertices[indices[i]][0], vertices[indices[i]][1], vertices[indices[i]][2]))
-    }
-}
 
 
 
@@ -525,24 +485,4 @@ function initShaders() {
         console.error("Program link error: " + gl.getProgramInfoLog(program));
         return;
     }
-}
-
-
-function pushData(attName) {
-    let attrib = gl.getAttribLocation(program, attName);
-    gl.vertexAttribPointer(attrib, 4, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(attrib);
-}
-
-//Create buffer for data
-function createBuffer(data) {
-    let buffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(data), gl.STATIC_DRAW);
-    return buffer;
-}
-
-function setUniformMatrix(name, data) {
-    let matrixLoc = gl.getUniformLocation(program, name);
-    gl.uniformMatrix4fv(matrixLoc, false, flatten(data));
 }
