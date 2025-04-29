@@ -307,6 +307,9 @@ function main() {
     gl.uniform4fv(gl.getUniformLocation(program, "diffuseProduct"), flatten([1.0, 1.0, 1.0, 1.0]));
     gl.uniform4fv(gl.getUniformLocation(program, "specularProduct"), flatten([1.0, 1.0, 1.0, 1.0]));
     gl.uniform1f(gl.getUniformLocation(program, "shininess"), 100.0);
+
+    //set boolean to mark that what is drawn is not the slingshot band
+    gl.uniform1i(gl.getUniformLocation(program, "isBand"), 0);
     
     createTower();
     canvas.addEventListener('click', collapseTower);
@@ -338,6 +341,7 @@ function main() {
     // Animation loop
     function render(currentTime = 0) {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
         
         if (isTowerFalling) tower.update(currentTime);
         tower.render();

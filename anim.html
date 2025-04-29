@@ -20,6 +20,7 @@
 
         attribute vec4 weights;
 
+        uniform int isBand;
         uniform mat4 boneMatrix0;
         uniform mat4 boneMatrix1;
         uniform mat4 boneMatrix2;
@@ -38,7 +39,12 @@
 
             fColor = vColor;
 
-            gl_Position = projMatrix * viewMatrix * worldPos;
+            if (isBand == 1) {
+                gl_Position = projMatrix * viewMatrix * worldPos;
+            }
+            else {
+                gl_Position = projMatrix * viewMatrix * worldPos;
+            }
         }
     </script>
 
