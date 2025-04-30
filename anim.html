@@ -51,9 +51,11 @@
 
                 vec4 pos = modelMatrix * vPosition;
 
-                pos.x -= pigPosition[0];
-                pos.y -= pigPosition[1];
-                pos.z -= pigPosition[2];
+                //deform towards center of pig
+                pos.x = pos.x - pigPosition[0];
+                pos.x = pos.x - 2.0;
+                pos.y = pos.y - pigPosition[1];
+                pos.z = pos.z - pigPosition[2];
 
                 float k = deformPig;
                 float maxy = 4.0;
@@ -62,9 +64,11 @@
                 pos.x = sy * pos.x;
                 pos.z = sy * pos.z;
 
-                pos.x += pigPosition[0];
-                pos.y += pigPosition[1];
-                pos.z += pigPosition[2];
+                //set positions normally again
+                pos.x = pos.x + pigPosition[0];
+                pos.x = pos.x + 2.0;
+                pos.y = pos.y + pigPosition[1];
+                pos.z = pos.z + pigPosition[2];
 
                 gl_Position = projMatrix * viewMatrix * pos;
             }
