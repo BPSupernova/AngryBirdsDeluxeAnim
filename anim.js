@@ -2,20 +2,27 @@ let gl, program, canvas;
 let modelMatrix, viewMatrix, projMatrix;
 let models = [];
 let lightPosition = vec4(5.0, 10.0, 5.0, 1.0)
+
 let tower;
 let isTowerFalling = false;
 let fallStartTime = 0;
 const G = 9.8;
 
+let splineData = null;
+let splineAnimStartTime = null;
+let isAnimatingWSpline = false;
+let currentSplinePoint = 0;
 
 class Model {
-    constructor(objPath, mtlPath) {
+    constructor(objPath, mtlPath, colorOverride = null) {
         this.vertices = [];
         this.normals = [];
         this.colors = [];
         this.weights = [];
         this.loaded = false;
-        
+
+        this.colorOverride = colorOverride;
+
         // Materials and groups
         this.materials = {};
         this.materialGroups = [];
@@ -214,9 +221,14 @@ class Model {
         }
         
         // Get material color
-        const materialColor = material && this.materials[material] ? 
-                              this.materials[material].diffuse : 
-                              [0.8, 0.8, 0.8, 1.0];
+        let materialColor;
+        if (this.colorOverride) {
+            materialColor = this.colorOverride;
+        } else if (material && this.materials[material]) {
+            materialColor = this.materials[material].diffuse;
+        } else {
+            materialColor = [0.8, 0.8, 0.8, 1.0]; // default gray
+        }
         
         // Triangulate the face (assuming convex)
         let vertCount = 0;
@@ -240,7 +252,7 @@ class Model {
             this.weights.push(vec4(0.0, 0.0, 0.0, 0.0));
             this.weights.push(vec4(0.0, 0.0, 0.0, 0.0));
             this.weights.push(vec4(0.0, 0.0, 0.0, 0.0));
-            
+
             vertCount += 3;
         }
         
@@ -283,7 +295,6 @@ class Model {
     }
 }
 
-
 function main() {
     canvas = document.getElementById('webgl');
     gl = WebGLUtils.setupWebGL(canvas);
@@ -317,7 +328,7 @@ function main() {
 
     //set boolean to mark that what is drawn is not the slingshot band
     gl.uniform1i(gl.getUniformLocation(program, "isBand"), 0);
-    
+
     createTower();
     canvas.addEventListener('click', collapseTower);
     canvas.addEventListener('click', launchSlingshot);
@@ -325,18 +336,21 @@ function main() {
     // Create model
     const red = new Model(
         "RedAngryBird/The_red_angry_bird_0428193917_texture.obj",
-        "RedAngryBird/The_red_angry_bird_0428193917_texture.mtl"
+        "RedAngryBird/The_red_angry_bird_0428193917_texture.mtl",
+        [1.0, 0.2, 0.2, 1.0]
     );
+    red.position = vec3(-3.0, 2.0, 0.0);
     models.push(red);
     
     // Example of creating a second model with different transforms
     const car2 = new Model(
         "Pig/16433_Pig.obj",
-        "Pig/Blank.mtl"
+        "Pig/Blank.mtl",
+        [0.2, 1.0, 0.2, 1.0]
     );
-    car2.position = vec3(2, 4.8, -5);
-    car2.rotation = vec3(-90, 0, 0);
-    car2.scale = vec3(0.8, 0.8, 0.8);
+    car2.position = vec3(1.0, 4.9, -10);
+    car2.rotation = vec3(-90, -15, 0);
+    car2.scale = vec3(1.5, 1.5, 1.5);
     car2.updateModelMatrix();
     models.push(car2);
 
@@ -348,6 +362,22 @@ function main() {
     let launch = false;
     let pullBack = true;
     let fire = false;
+
+    loadSpline("spline.txt").then(data => {
+        if (data) {
+            console.log("Spline loaded successfully");
+            splineData = data;
+            splineData.printSpline();
+
+            window.addEventListener('keydown', (event) => {
+                if (event.code === 'Space' && !isAnimatingWSpline) {
+                    console.log("Starting animation");
+                    isAnimatingWSpline = true;
+                    splineAnimStartTime = performance.now();
+                }
+            });
+        }
+    });
 
     function updateSlingshot() {
         if (launch === true) {
@@ -397,7 +427,11 @@ function main() {
         setUniformMatrix("boneMatrix1", boneMatrix1);
         setUniformMatrix("boneMatrix2", boneMatrix2);
 
-        
+
+        if (isAnimatingWSpline && models[0] && models[0].loaded) {
+            updateModelOnSpline(models[0], currentTime);
+        }
+
         if (isTowerFalling) tower.update(currentTime);
         tower.render();
 
