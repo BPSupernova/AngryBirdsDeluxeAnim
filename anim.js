@@ -456,6 +456,9 @@ function main() {
             updateModelOnSpline(models[0], currentTime);
         }
 
+        if (isAnimatingWPhysics && models[1] && models[1].loaded) {
+            updateModelOnPhysics(models[1]);
+        }
 
         if (isTowerFalling) tower.update(currentTime);
         tower.render();
@@ -475,12 +478,15 @@ function main() {
             models[1].rotation[1] -= 0.2; // Rotate Y axis
             models[1].updateModelMatrix();
         }
-        console.log(models);
         
         requestAnimationFrame(render);
     }
     
     render();
+}
+
+function updateModelOnPhysics(model) {
+    if (!isAnimatingWPhysics) return;
 }
 
 
