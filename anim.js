@@ -18,11 +18,12 @@ let physicsAnimStartTime = null;
 let physicsVelocity = vec3(0, 0, 0);
 
 class Model {
-    constructor(objPath, mtlPath, colorOverride = null) {
+    constructor(objPath, mtlPath, name, colorOverride = null) {
         this.vertices = [];
         this.normals = [];
         this.colors = [];
         this.weights = [];
+        this.name = name;
         this.loaded = false;
 
         this.pointBuffer = 0;
@@ -343,8 +344,9 @@ function main() {
     gl.uniform4fv(gl.getUniformLocation(program, "specularProduct"), flatten([1.0, 1.0, 1.0, 1.0]));
     gl.uniform1f(gl.getUniformLocation(program, "shininess"), 100.0);
 
-    //set boolean to mark that what is drawn is not the slingshot band
+    //set boolean to mark that what is drawn is not the slingshot band or pig
     gl.uniform1i(gl.getUniformLocation(program, "isBand"), 0);
+    gl.uniform1i(gl.getUniformLocation(program, "isPig"), 0);
 
     createTower();
     canvas.addEventListener('click', collapseTower);
@@ -354,6 +356,7 @@ function main() {
     const red = new Model(
         "RedAngryBird/The_red_angry_bird_0428193917_texture.obj",
         "RedAngryBird/The_red_angry_bird_0428193917_texture.mtl",
+        "Bird1",
         [1.0, 0.2, 0.2, 1.0]
     );
     red.position = vec3(-3.0, 1.5, -7.5);
@@ -362,6 +365,7 @@ function main() {
     const bird2 = new Model(
         "BlueAngryBird/12248_Bird_v1_L2.obj",
         "BlueAngryBird/12248_Bird_v1_L2.mtl",
+        "Bird2",
         [0.2, 0.0, 1.0, 1.0]
     );
     bird2.position = vec3(-6, 0.0, -6);
@@ -372,6 +376,7 @@ function main() {
     const pig = new Model(
         "Pig/16433_Pig.obj",
         "Pig/Blank.mtl",
+        "Pig",
         [0.2, 1.0, 0.2, 1.0]
     );
     pig.position = vec3(1.0, 4.9, -10);
@@ -482,7 +487,15 @@ function main() {
 
         // Render all models
         for (const model of models) {
-            model.render();
+            //only apply shape deformation if model is pig
+            if (model.name === "Pig") {
+                gl.uniform1i(gl.getUniformLocation(program, "isPig"), 1);
+                model.render();
+                gl.uniform1i(gl.getUniformLocation(program, "isPig"), 0);
+            }
+            else {
+                model.render();
+            }
         }
         
         // Animate the first car (if loaded)

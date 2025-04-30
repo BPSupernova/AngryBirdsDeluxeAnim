@@ -19,12 +19,12 @@
         varying vec3 fView;
         varying vec4 fColor;
 
-
-
         uniform int isBand;
         uniform mat4 boneMatrix0;
         uniform mat4 boneMatrix1;
         uniform mat4 boneMatrix2;
+
+        uniform int isPig;
 
         void main() {
             mat4 bone0 = vWeight[0] * boneMatrix0;
@@ -43,9 +43,14 @@
             if (isBand == 1) {
                 gl_Position = projMatrix * viewMatrix * modelMatrix * bentPoint;
             }
+            else if (isPig == 1) {
+                gl_Position = projMatrix * viewMatrix * worldPos;
+            }
             else {
                 gl_Position = projMatrix * viewMatrix * worldPos;
             }
+
+            //deform the pig
         }
     </script>
 
