@@ -503,7 +503,7 @@ function main() {
 }
 
 function initializePhysics(model) {
-    let velocity = 7.0;
+    let velocity = 2.0;
     let verticalAngle = 45;
     let horizontalAngle = -45;
 
@@ -518,9 +518,7 @@ function initializePhysics(model) {
 function updateModelOnPhysics(model, currentTime) {
     if (!isAnimatingWPhysics) return;
 
-        // degrees
-    let gravity = 2.8;
-    console.log("updating...");
+    let gravity = 0.4;
 
     const elapsedTime = (currentTime - physicsAnimStartTime) / 1000;
 
