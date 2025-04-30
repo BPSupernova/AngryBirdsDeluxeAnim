@@ -13,6 +13,8 @@ let splineAnimStartTime = null;
 let isAnimatingWSpline = false;
 let currentSplinePoint = 0;
 
+let isAnimatingWPhysics = false;
+
 class Model {
     constructor(objPath, mtlPath, colorOverride = null) {
         this.vertices = [];
@@ -346,7 +348,7 @@ function main() {
     canvas.addEventListener('click', collapseTower);
     canvas.addEventListener('click', launchSlingshot);
 
-    // Create model
+    // Create model for first bird
     const red = new Model(
         "RedAngryBird/The_red_angry_bird_0428193917_texture.obj",
         "RedAngryBird/The_red_angry_bird_0428193917_texture.mtl",
@@ -364,18 +366,17 @@ function main() {
     bird2.rotation = vec3(270, 0, 0);
     bird2.scale = vec3(0.05, 0.05, 0.05);
     models.push(bird2);
-    
-    // Example of creating a second model with different transforms
-    const car2 = new Model(
+
+    const pig = new Model(
         "Pig/16433_Pig.obj",
         "Pig/Blank.mtl",
         [0.2, 1.0, 0.2, 1.0]
     );
-    car2.position = vec3(1.0, 4.9, -10);
-    car2.rotation = vec3(-90, -15, 0);
-    car2.scale = vec3(1.5, 1.5, 1.5);
-    car2.updateModelMatrix();
-    models.push(car2);
+    pig.position = vec3(1.0, 4.9, -10);
+    pig.rotation = vec3(-90, -15, 0);
+    pig.scale = vec3(1.5, 1.5, 1.5);
+    pig.updateModelMatrix();
+    models.push(pig);
 
     const slingshot = new Slingshot(vec3(-3, -1, -5), vec3(0, -45, 0), vec3(0.4, 0.4, 0.4));
     slingshot.createSlingshotBase();
@@ -455,6 +456,7 @@ function main() {
             updateModelOnSpline(models[0], currentTime);
         }
 
+
         if (isTowerFalling) tower.update(currentTime);
         tower.render();
 
@@ -468,12 +470,20 @@ function main() {
             models[0].rotation[1] += 0.2; // Rotate Y axis
             models[0].updateModelMatrix();
         }
+
+        if (models[1] && models[1].loaded) {
+            models[1].rotation[1] -= 0.2; // Rotate Y axis
+            models[1].updateModelMatrix();
+        }
+        console.log(models);
         
         requestAnimationFrame(render);
     }
     
     render();
 }
+
+
 //creates model matrix based on given transformations
 function createModelMatrix(position, rotation, scale) {
     return mult(
@@ -489,17 +499,6 @@ function createModelMatrix(position, rotation, scale) {
             )
         )
     );
-}
-
-//creates buffer based on given data and name
-function setupBuffer(attributeName, data, size) {
-    const buffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(data), gl.STATIC_DRAW);
-
-    const location = gl.getAttribLocation(program, attributeName);
-    gl.vertexAttribPointer(location, size, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(location);
 }
 
 function pushData(attName, buffer, size) {
