@@ -13,6 +13,10 @@ let splineAnimStartTime = null;
 let isAnimatingWSpline = false;
 let currentSplinePoint = 0;
 
+let isAnimatingWPhysics = false;
+let physicsAnimStartTime = null;
+let physicsVelocity = vec3(0, 0, 0);
+
 class Model {
     constructor(objPath, mtlPath, colorOverride = null) {
         this.vertices = [];
@@ -346,7 +350,7 @@ function main() {
     canvas.addEventListener('click', collapseTower);
     canvas.addEventListener('click', launchSlingshot);
 
-    // Create model
+    // Create model for first bird
     const red = new Model(
         "RedAngryBird/The_red_angry_bird_0428193917_texture.obj",
         "RedAngryBird/The_red_angry_bird_0428193917_texture.mtl",
@@ -354,20 +358,29 @@ function main() {
     );
     red.position = vec3(-3.0, 1.5, -7.5);
     models.push(red);
-    
-    // Example of creating a second model with different transforms
-    const car2 = new Model(
+
+    const bird2 = new Model(
+        "BlueAngryBird/12248_Bird_v1_L2.obj",
+        "BlueAngryBird/12248_Bird_v1_L2.mtl",
+        [0.2, 0.0, 1.0, 1.0]
+    );
+    bird2.position = vec3(-6, 0.0, -6);
+    bird2.rotation = vec3(270, 0, 0);
+    bird2.scale = vec3(0.05, 0.05, 0.05);
+    models.push(bird2);
+
+    const pig = new Model(
         "Pig/16433_Pig.obj",
         "Pig/Blank.mtl",
         [0.2, 1.0, 0.2, 1.0]
     );
-    car2.position = vec3(1.0, 4.9, -10);
-    car2.rotation = vec3(-90, -15, 0);
-    car2.scale = vec3(1.5, 1.5, 1.5);
-    car2.updateModelMatrix();
-    models.push(car2);
+    pig.position = vec3(1.0, 4.9, -10);
+    pig.rotation = vec3(-90, -15, 0);
+    pig.scale = vec3(1.5, 1.5, 1.5);
+    pig.updateModelMatrix();
+    models.push(pig);
 
-    const slingshot = new Slingshot(vec3(-3, -1, -5), vec3(0, -45, 0), vec3(0.4, 0.4, 0.4));
+    const slingshot = new Slingshot(vec3(-3, 0, -5), vec3(0, -45, 0), vec3(0.4, 0.4, 0.4));
     slingshot.createSlingshotBase();
     models.push(slingshot);
 
@@ -384,11 +397,26 @@ function main() {
 
             window.addEventListener('keydown', (event) => {
                 if (event.code === 'Space' && !isAnimatingWSpline) {
-                    console.log("Starting animation");
+                    console.log("Starting spline animation");
                     isAnimatingWSpline = true;
                     splineAnimStartTime = performance.now();
                 }
             });
+        }
+    });
+
+
+
+    //add event listener for physics motion
+    window.addEventListener('keydown', (event) => {
+        if (event.code === "KeyF" && !isAnimatingWPhysics) {
+            console.log("starting physics animation");
+
+            //set original velocity for physics bird
+            initializePhysics(models[1]);
+
+            isAnimatingWPhysics = true;
+            physicsAnimStartTime = performance.now();
         }
     });
 
@@ -445,6 +473,10 @@ function main() {
             updateModelOnSpline(models[0], currentTime);
         }
 
+        if (isAnimatingWPhysics && models[1] && models[1].loaded) {
+            updateModelOnPhysics(models[1], currentTime);
+        }
+
         if (isTowerFalling) tower.update(currentTime);
         tower.render();
 
@@ -458,12 +490,53 @@ function main() {
             models[0].rotation[1] += 0.2; // Rotate Y axis
             models[0].updateModelMatrix();
         }
+
+        if (models[1] && models[1].loaded) {
+            models[1].rotation[1] -= 0.2; // Rotate Y axis
+            models[1].updateModelMatrix();
+        }
         
         requestAnimationFrame(render);
     }
     
     render();
 }
+
+function initializePhysics(model) {
+    let velocity = 2.0;
+    let verticalAngle = 45;
+    let horizontalAngle = -45;
+
+    let verticalRadius = verticalAngle * Math.PI / 180;
+    let horizontalRadius = horizontalAngle * Math.PI / 180;
+    model.position = vec3(-3, 2, -5);
+    physicsVelocity[0] = velocity * Math.cos(verticalRadius) * Math.cos(horizontalRadius);
+    physicsVelocity[1] = velocity * Math.sin(verticalRadius);
+    physicsVelocity[2] = velocity * Math.sin(verticalRadius) * Math.sin(horizontalRadius);
+}
+
+function updateModelOnPhysics(model, currentTime) {
+    if (!isAnimatingWPhysics) return;
+
+    let gravity = 0.4;
+
+    const elapsedTime = (currentTime - physicsAnimStartTime) / 1000;
+
+    let velPrime = physicsVelocity[1] - (gravity * elapsedTime);
+
+    model.position[0] = model.position[0] + (physicsVelocity[0] * elapsedTime);
+
+    model.position[1] = model.position[1] + (physicsVelocity[1] * elapsedTime + (0.5 * gravity) * (elapsedTime ** 2));
+    physicsVelocity[1] = velPrime;
+
+    model.position[2] = model.position[2] + (physicsVelocity[2] * elapsedTime);
+
+    if (model.position[1] < 0) {
+        isAnimatingWPhysics = false;
+    }
+}
+
+
 //creates model matrix based on given transformations
 function createModelMatrix(position, rotation, scale) {
     return mult(
@@ -479,17 +552,6 @@ function createModelMatrix(position, rotation, scale) {
             )
         )
     );
-}
-
-//creates buffer based on given data and name
-function setupBuffer(attributeName, data, size) {
-    const buffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(data), gl.STATIC_DRAW);
-
-    const location = gl.getAttribLocation(program, attributeName);
-    gl.vertexAttribPointer(location, size, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(location);
 }
 
 function pushData(attName, buffer, size) {
