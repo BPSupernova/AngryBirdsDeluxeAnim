@@ -18,10 +18,11 @@ class Model {
         this.vertices = [];
         this.normals = [];
         this.colors = [];
+        this.weights = [];
         this.loaded = false;
 
         this.colorOverride = colorOverride;
-        
+
         // Materials and groups
         this.materials = {};
         this.materialGroups = [];
@@ -246,7 +247,12 @@ class Model {
             this.colors.push(materialColor);
             this.colors.push(materialColor);
             this.colors.push(materialColor);
-            
+
+            //Add dummy weights
+            this.weights.push(vec4(0.0, 0.0, 0.0, 0.0));
+            this.weights.push(vec4(0.0, 0.0, 0.0, 0.0));
+            this.weights.push(vec4(0.0, 0.0, 0.0, 0.0));
+
             vertCount += 3;
         }
         
@@ -279,22 +285,13 @@ class Model {
         );
         
         // Set up buffers
-        this.setupBuffer('vPosition', this.vertices, 4);
-        this.setupBuffer('vNormal', this.normals, 3);
-        this.setupBuffer('vColor', this.colors, 4);
+        setupBuffer('vPosition', this.vertices, 4);
+        setupBuffer('vNormal', this.normals, 3);
+        setupBuffer('vColor', this.colors, 4);
+        setupBuffer('vWeight', this.weights, 4);
         
         // Draw the model
         gl.drawArrays(gl.TRIANGLES, 0, this.vertices.length);
-    }
-
-    setupBuffer(attributeName, data, size) {
-        const buffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-        gl.bufferData(gl.ARRAY_BUFFER, flatten(data), gl.STATIC_DRAW);
-        
-        const location = gl.getAttribLocation(program, attributeName);
-        gl.vertexAttribPointer(location, size, gl.FLOAT, false, 0, 0);
-        gl.enableVertexAttribArray(location);
     }
 }
 
@@ -312,7 +309,7 @@ function main() {
     gl.enable(gl.DEPTH_TEST);
     
     // Initialize shaders with the updated versions
-    initShaders();
+    program = initShaders(gl, "vshader", "fshader");
     gl.useProgram(program);
     
     // Set up matrices
@@ -328,14 +325,18 @@ function main() {
     gl.uniform4fv(gl.getUniformLocation(program, "diffuseProduct"), flatten([1.0, 1.0, 1.0, 1.0]));
     gl.uniform4fv(gl.getUniformLocation(program, "specularProduct"), flatten([1.0, 1.0, 1.0, 1.0]));
     gl.uniform1f(gl.getUniformLocation(program, "shininess"), 100.0);
-    
+
+    //set boolean to mark that what is drawn is not the slingshot band
+    gl.uniform1i(gl.getUniformLocation(program, "isBand"), 0);
+
     createTower();
     canvas.addEventListener('click', collapseTower);
+    canvas.addEventListener('click', launchSlingshot);
 
     // Create model
     const red = new Model(
         "RedAngryBird/The_red_angry_bird_0428193917_texture.obj",
-        "RedAngryBird/The_red_angry_bird_0428193917_texture.mtl", 
+        "RedAngryBird/The_red_angry_bird_0428193917_texture.mtl",
         [1.0, 0.2, 0.2, 1.0]
     );
     red.position = vec3(-3.0, 2.0, 0.0);
@@ -353,16 +354,21 @@ function main() {
     car2.updateModelMatrix();
     models.push(car2);
 
-    const slingShot = new Slingshot(vec3(-3, -1, 0), vec3(0, 0, 0), vec3(0.4, 0.4, 0.4));
-    slingShot.createSlingshotBase();
-    models.push(slingShot);
+    const slingshot = new Slingshot(vec3(-3, -1, -5), vec3(0, -45, 0), vec3(0.4, 0.4, 0.4));
+    slingshot.createSlingshotBase();
+    models.push(slingshot);
+
+    let slingshotBend = 0;
+    let launch = false;
+    let pullBack = true;
+    let fire = false;
 
     loadSpline("spline.txt").then(data => {
         if (data) {
             console.log("Spline loaded successfully");
             splineData = data;
             splineData.printSpline();
-            
+
             window.addEventListener('keydown', (event) => {
                 if (event.code === 'Space' && !isAnimatingWSpline) {
                     console.log("Starting animation");
@@ -372,11 +378,56 @@ function main() {
             });
         }
     });
-    
+
+    function updateSlingshot() {
+        if (launch === true) {
+            if (pullBack === true) {
+                slingshotBend += 0.1;
+                if (slingshotBend >= 8) {
+                    pullBack = false;
+                }
+            }
+            else if (fire === true) {
+                slingshotBend -= 1;
+                if (slingshotBend <= 0) {
+                    launch = false;
+                    //set for next launch
+                    pullBack = true;
+                    slingshotBend = 0;
+                }
+            }
+        }
+    }
+
+    function launchSlingshot() {
+        if (pullBack === false && fire === false) {
+            launch = true;
+            fire = true;
+        }
+        else {
+            launch = true;
+            fire = false;
+            pullBack = true;
+        }
+    }
+
+
     // Animation loop
     function render(currentTime = 0) {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        
+
+        //update boneMatrix1 if launching has been triggered
+        updateSlingshot();
+        //set bone matrices for bending slingshot
+        let boneMatrix0 = mat4();
+        let boneMatrix1 = mult(translate(0, -slingshotBend/2, slingshotBend), boneMatrix0);
+        let boneMatrix2 = mat4();
+
+        setUniformMatrix("boneMatrix0", boneMatrix0);
+        setUniformMatrix("boneMatrix1", boneMatrix1);
+        setUniformMatrix("boneMatrix2", boneMatrix2);
+
+
         if (isAnimatingWSpline && models[0] && models[0].loaded) {
             updateModelOnSpline(models[0], currentTime);
         }
@@ -400,11 +451,7 @@ function main() {
     
     render();
 }
-
-let points = [];
-let colors = [];
-let normals = [];
-
+//creates model matrix based on given transformations
 function createModelMatrix(position, rotation, scale) {
     return mult(
         translate(position[0], position[1], position[2]),
@@ -421,157 +468,15 @@ function createModelMatrix(position, rotation, scale) {
     );
 }
 
-//create a cube
-function setCubePoints()
-{
-    points = [];
-    colors = [];
-    normals = [];
-    quad( 1, 0, 3, 2 );
-    quad( 2, 3, 7, 6 );
-    quad( 3, 0, 4, 7 );
-    quad( 6, 5, 1, 2 );
-    quad( 4, 5, 6, 7 );
-    quad( 5, 4, 0, 1 );
-
-    //return all info needed to draw cube
-    return [points, colors, normals];
-}
-
-function quad(a, b, c, d)
-{
-    let vertices = [
-        vec4( -0.5, -2.5,  0.5, 1.0 ),
-        vec4( -0.5,  2.5,  0.5, 1.0 ),
-        vec4(  0.5,  2.5,  0.5, 1.0 ),
-        vec4(  0.5, -2.5,  0.5, 1.0 ),
-        vec4( -0.5, -2.5, -0.5, 1.0 ),
-        vec4( -0.5,  2.5, -0.5, 1.0 ),
-        vec4(  0.5,  2.5, -0.5, 1.0 ),
-        vec4(  0.5, -2.5, -0.5, 1.0 )
-    ];
-
-    let indices = [ a, b, c, a, c, d ];
-
-    for ( let i = 0; i < indices.length; ++i ) {
-        points.push( vertices[indices[i]] );
-        colors.push([ 0.4, 0.2, 0.0, 1.0 ]);
-        normals.push(vec3(vertices[indices[i]][0], vertices[indices[i]][1], vertices[indices[i]][2]))
-    }
-}
-
-
-
-// Initialize shaders with new versions that include lighting
-function initShaders() {
-    const vertexShader = `
-        attribute vec4 vPosition;
-        attribute vec3 vNormal;
-        attribute vec4 vColor;
-        
-        uniform mat4 modelMatrix;
-        uniform mat4 viewMatrix;
-        uniform mat4 projMatrix;
-        uniform vec4 lightPosition;
-        
-        varying vec3 fNormal;
-        varying vec3 fLight;
-        varying vec3 fView;
-        varying vec4 fColor;
-        
-        void main() {
-            // Transform vertex and normal to world coordinates
-            vec4 worldPos = modelMatrix * vPosition;
-            fNormal = (modelMatrix * vec4(vNormal, 0.0)).xyz;
-            
-            // Calculate light and view directions
-            fLight = lightPosition.xyz - worldPos.xyz;
-            fView = -worldPos.xyz;
-            
-            // Pass color to fragment shader
-            fColor = vColor;
-            
-            // Apply view and projection transforms
-            gl_Position = projMatrix * viewMatrix * worldPos;
-        }
-    `;
-    
-    const fragmentShader = `
-        precision mediump float;
-        
-        varying vec3 fNormal;
-        varying vec3 fLight;
-        varying vec3 fView;
-        varying vec4 fColor;
-        
-        uniform vec4 ambientProduct;
-        uniform vec4 diffuseProduct;
-        uniform vec4 specularProduct;
-        uniform float shininess;
-        
-        void main() {
-            // Normalize vectors
-            vec3 N = normalize(fNormal);
-            vec3 L = normalize(fLight);
-            vec3 V = normalize(fView);
-            vec3 H = normalize(L + V);
-            
-            // Calculate lighting components
-            float Kd = max(dot(L, N), 0.0);
-            vec4 diffuse = Kd * diffuseProduct * fColor;
-            
-            float Ks = pow(max(dot(N, H), 0.0), shininess);
-            vec4 specular = Ks * specularProduct;
-            
-            vec4 ambient = ambientProduct * fColor;
-            
-            // Combine lighting components
-            gl_FragColor = ambient + diffuse + specular;
-            gl_FragColor.a = 1.0;
-        }
-    `;
-    
-    // Compile shaders
-    const vs = gl.createShader(gl.VERTEX_SHADER);
-    gl.shaderSource(vs, vertexShader);
-    gl.compileShader(vs);
-    if (!gl.getShaderParameter(vs, gl.COMPILE_STATUS)) {
-        console.error("VS error: " + gl.getShaderInfoLog(vs));
-        return;
-    }
-    
-    const fs = gl.createShader(gl.FRAGMENT_SHADER);
-    gl.shaderSource(fs, fragmentShader);
-    gl.compileShader(fs);
-    if (!gl.getShaderParameter(fs, gl.COMPILE_STATUS)) {
-        console.error("FS error: " + gl.getShaderInfoLog(fs));
-        return;
-    }
-    
-    // Create program
-    program = gl.createProgram();
-    gl.attachShader(program, vs);
-    gl.attachShader(program, fs);
-    gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-        console.error("Program link error: " + gl.getProgramInfoLog(program));
-        return;
-    }
-}
-
-
-function pushData(attName) {
-    let attrib = gl.getAttribLocation(program, attName);
-    gl.vertexAttribPointer(attrib, 4, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(attrib);
-}
-
-//Create buffer for data
-function createBuffer(data) {
-    let buffer = gl.createBuffer();
+//creates buffer based on given data and name
+function setupBuffer(attributeName, data, size) {
+    const buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.bufferData(gl.ARRAY_BUFFER, flatten(data), gl.STATIC_DRAW);
-    return buffer;
+
+    const location = gl.getAttribLocation(program, attributeName);
+    gl.vertexAttribPointer(location, size, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(location);
 }
 
 function setUniformMatrix(name, data) {
