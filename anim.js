@@ -354,6 +354,16 @@ function main() {
     );
     red.position = vec3(-3.0, 1.5, -7.5);
     models.push(red);
+
+    const bird2 = new Model(
+        "BlueAngryBird/12248_Bird_v1_L2.obj",
+        "BlueAngryBird/12248_Bird_v1_L2.mtl",
+        [0.2, 0.0, 1.0, 1.0]
+    );
+    bird2.position = vec3(-6, 0.0, -6);
+    bird2.rotation = vec3(270, 0, 0);
+    bird2.scale = vec3(0.05, 0.05, 0.05);
+    models.push(bird2);
     
     // Example of creating a second model with different transforms
     const car2 = new Model(
