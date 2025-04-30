@@ -17,6 +17,9 @@ let isAnimatingWPhysics = false;
 let physicsAnimStartTime = null;
 let physicsVelocity = vec3(0, 0, 0);
 
+let deformPig = 0;
+let pigIsDying = false;
+
 class Model {
     constructor(objPath, mtlPath, name, colorOverride = null) {
         this.vertices = [];
@@ -351,6 +354,7 @@ function main() {
     createTower();
     canvas.addEventListener('click', collapseTower);
     canvas.addEventListener('click', launchSlingshot);
+    canvas.addEventListener('click', updatePig);
 
     // Create model for first bird
     const red = new Model(
@@ -489,7 +493,12 @@ function main() {
         for (const model of models) {
             //only apply shape deformation if model is pig
             if (model.name === "Pig") {
+                if (deformPig < 2.5 && pigIsDying) {
+                    deformPig += 0.01;
+                }
                 gl.uniform1i(gl.getUniformLocation(program, "isPig"), 1);
+                gl.uniform3fv(gl.getUniformLocation(program, "pigPosition"), flatten(model.position));
+                gl.uniform1f(gl.getUniformLocation(program, "deformPig"), deformPig);
                 model.render();
                 gl.uniform1i(gl.getUniformLocation(program, "isPig"), 0);
             }
@@ -497,22 +506,16 @@ function main() {
                 model.render();
             }
         }
-        
-        // Animate the first car (if loaded)
-        if (models[0] && models[0].loaded) {
-            models[0].rotation[1] += 0.2; // Rotate Y axis
-            models[0].updateModelMatrix();
-        }
 
-        if (models[1] && models[1].loaded) {
-            models[1].rotation[1] -= 0.2; // Rotate Y axis
-            models[1].updateModelMatrix();
-        }
-        
         requestAnimationFrame(render);
     }
     
     render();
+}
+
+function updatePig() {
+    deformPig = 0;
+    pigIsDying = !pigIsDying;
 }
 
 function initializePhysics(model) {
@@ -547,6 +550,9 @@ function updateModelOnPhysics(model, currentTime) {
     if (model.position[1] < 0) {
         isAnimatingWPhysics = false;
     }
+
+    model.updateModelMatrix();
+
 }
 
 
