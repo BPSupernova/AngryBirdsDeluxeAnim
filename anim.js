@@ -21,6 +21,11 @@ class Model {
         this.weights = [];
         this.loaded = false;
 
+        this.pointBuffer = 0;
+        this.normalBuffer = 0;
+        this.colorBuffer = 0;
+        this.weightBuffer = 0;
+
         this.colorOverride = colorOverride;
 
         // Materials and groups
@@ -283,12 +288,20 @@ class Model {
             false, 
             flatten(this.modelMatrix)
         );
-        
-        // Set up buffers
-        setupBuffer('vPosition', this.vertices, 4);
-        setupBuffer('vNormal', this.normals, 3);
-        setupBuffer('vColor', this.colors, 4);
-        setupBuffer('vWeight', this.weights, 4);
+
+        //populate buffers the first time this is ran
+        if (this.pointBuffer === 0) {
+            this.pointBuffer = createBuffer(this.vertices);
+            this.normalBuffer = createBuffer(this.normals);
+            this.colorBuffer = createBuffer(this.colors);
+            this.weightBuffer = createBuffer(this.weights);
+        }
+
+        //push all buffer data to shaders
+        pushData("vPosition", this.pointBuffer, 4);
+        pushData("vNormal", this.normalBuffer, 3);
+        pushData("vColor", this.colorBuffer, 4);
+        pushData("vWeight", this.weightBuffer, 4);
         
         // Draw the model
         gl.drawArrays(gl.TRIANGLES, 0, this.vertices.length);
@@ -477,6 +490,21 @@ function setupBuffer(attributeName, data, size) {
     const location = gl.getAttribLocation(program, attributeName);
     gl.vertexAttribPointer(location, size, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(location);
+}
+
+function pushData(attName, buffer, size) {
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    let attrib = gl.getAttribLocation(program, attName);
+    gl.vertexAttribPointer(attrib, size, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(attrib);
+}
+
+//Create buffer for data
+function createBuffer(data) {
+    let buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(data), gl.STATIC_DRAW);
+    return buffer;
 }
 
 function setUniformMatrix(name, data) {
