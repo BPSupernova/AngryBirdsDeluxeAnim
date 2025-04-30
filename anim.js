@@ -380,7 +380,7 @@ function main() {
     pig.updateModelMatrix();
     models.push(pig);
 
-    const slingshot = new Slingshot(vec3(-3, -1, -5), vec3(0, -45, 0), vec3(0.4, 0.4, 0.4));
+    const slingshot = new Slingshot(vec3(-3, 0, -5), vec3(0, -45, 0), vec3(0.4, 0.4, 0.4));
     slingshot.createSlingshotBase();
     models.push(slingshot);
 
@@ -503,30 +503,35 @@ function main() {
 }
 
 function initializePhysics(model) {
-    let velocity = 5.0;
-    let angle = 70;
+    let velocity = 7.0;
+    let verticalAngle = 45;
+    let horizontalAngle = -45;
 
-    let rad = angle * Math.PI / 180;
-    model.position = vec3(2, 2.0, -6);
-    physicsVelocity[0] = velocity * Math.cos(rad);
-    physicsVelocity[1] = velocity * Math.sin(rad);
+    let verticalRadius = verticalAngle * Math.PI / 180;
+    let horizontalRadius = horizontalAngle * Math.PI / 180;
+    model.position = vec3(-3, 2, -5);
+    physicsVelocity[0] = velocity * Math.cos(verticalRadius) * Math.cos(horizontalRadius);
+    physicsVelocity[1] = velocity * Math.sin(verticalRadius);
+    physicsVelocity[2] = velocity * Math.sin(verticalRadius) * Math.sin(horizontalRadius);
 }
 
 function updateModelOnPhysics(model, currentTime) {
     if (!isAnimatingWPhysics) return;
 
         // degrees
-    let gravity = 9.8;
+    let gravity = 2.8;
     console.log("updating...");
 
     const elapsedTime = (currentTime - physicsAnimStartTime) / 1000;
 
     let velPrime = physicsVelocity[1] - (gravity * elapsedTime);
 
-    model.position[0] = model.position[0] + (model.position[0] * elapsedTime);
+    model.position[0] = model.position[0] + (physicsVelocity[0] * elapsedTime);
 
     model.position[1] = model.position[1] + (physicsVelocity[1] * elapsedTime + (0.5 * gravity) * (elapsedTime ** 2));
     physicsVelocity[1] = velPrime;
+
+    model.position[2] = model.position[2] + (physicsVelocity[2] * elapsedTime);
 
     if (model.position[1] < 0) {
         isAnimatingWPhysics = false;
