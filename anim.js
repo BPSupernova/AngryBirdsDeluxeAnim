@@ -15,6 +15,7 @@ let currentSplinePoint = 0;
 
 let isAnimatingWPhysics = false;
 let physicsAnimStartTime = null;
+let physicsVelocity = vec3(0, 0, 0);
 
 class Model {
     constructor(objPath, mtlPath, colorOverride = null) {
@@ -396,16 +397,26 @@ function main() {
 
             window.addEventListener('keydown', (event) => {
                 if (event.code === 'Space' && !isAnimatingWSpline) {
-                    console.log("Starting animation");
+                    console.log("Starting spline animation");
                     isAnimatingWSpline = true;
                     splineAnimStartTime = performance.now();
                 }
-                else if (event.code === "KeyF" && !isAnimatingWPhysics) {
-                    console.log("starting new animation");
-                    isAnimatingWPhysics = true;
-                    physicsAnimStartTime = performance.now();
-                }
             });
+        }
+    });
+
+
+
+    //add event listener for physics motion
+    window.addEventListener('keydown', (event) => {
+        if (event.code === "KeyF" && !isAnimatingWPhysics) {
+            console.log("starting physics animation");
+
+            //set original velocity for physics bird
+            initializePhysics(models[1]);
+
+            isAnimatingWPhysics = true;
+            physicsAnimStartTime = performance.now();
         }
     });
 
@@ -491,9 +502,35 @@ function main() {
     render();
 }
 
+function initializePhysics(model) {
+    let velocity = 5.0;
+    let angle = 70;
+
+    let rad = angle * Math.PI / 180;
+    model.position = vec3(2, 2.0, -6);
+    physicsVelocity[0] = velocity * Math.cos(rad);
+    physicsVelocity[1] = velocity * Math.sin(rad);
+}
+
 function updateModelOnPhysics(model, currentTime) {
     if (!isAnimatingWPhysics) return;
+
+        // degrees
+    let gravity = 9.8;
+    console.log("updating...");
+
     const elapsedTime = (currentTime - physicsAnimStartTime) / 1000;
+
+    let velPrime = physicsVelocity[1] - (gravity * elapsedTime);
+
+    model.position[0] = model.position[0] + (model.position[0] * elapsedTime);
+
+    model.position[1] = model.position[1] + (physicsVelocity[1] * elapsedTime + (0.5 * gravity) * (elapsedTime ** 2));
+    physicsVelocity[1] = velPrime;
+
+    if (model.position[1] < 0) {
+        isAnimatingWPhysics = false;
+    }
 }
 
 
