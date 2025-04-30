@@ -14,6 +14,7 @@ let isAnimatingWSpline = false;
 let currentSplinePoint = 0;
 
 let isAnimatingWPhysics = false;
+let physicsAnimStartTime = null;
 
 class Model {
     constructor(objPath, mtlPath, colorOverride = null) {
@@ -399,6 +400,11 @@ function main() {
                     isAnimatingWSpline = true;
                     splineAnimStartTime = performance.now();
                 }
+                else if (event.code === "KeyF" && !isAnimatingWPhysics) {
+                    console.log("starting new animation");
+                    isAnimatingWPhysics = true;
+                    physicsAnimStartTime = performance.now();
+                }
             });
         }
     });
@@ -457,7 +463,7 @@ function main() {
         }
 
         if (isAnimatingWPhysics && models[1] && models[1].loaded) {
-            updateModelOnPhysics(models[1]);
+            updateModelOnPhysics(models[1], currentTime);
         }
 
         if (isTowerFalling) tower.update(currentTime);
@@ -485,8 +491,9 @@ function main() {
     render();
 }
 
-function updateModelOnPhysics(model) {
+function updateModelOnPhysics(model, currentTime) {
     if (!isAnimatingWPhysics) return;
+    const elapsedTime = (currentTime - physicsAnimStartTime) / 1000;
 }
 
 
