@@ -352,7 +352,7 @@ function main() {
         "RedAngryBird/The_red_angry_bird_0428193917_texture.mtl",
         [1.0, 0.2, 0.2, 1.0]
     );
-    red.position = vec3(-3.0, 2.0, 0.0);
+    red.position = vec3(-3.0, 1.5, -7.5);
     models.push(red);
     
     // Example of creating a second model with different transforms
