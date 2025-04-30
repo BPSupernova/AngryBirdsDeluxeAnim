@@ -320,6 +320,7 @@ function main() {
     
     createTower();
     canvas.addEventListener('click', collapseTower);
+    canvas.addEventListener('click', launchSlingshot);
 
     // Create model
     const red = new Model(
@@ -339,21 +340,58 @@ function main() {
     car2.updateModelMatrix();
     models.push(car2);
 
-    const slingshot = new Slingshot(vec3(-3, -1, -5), vec3(0, 0, 0), vec3(0.4, 0.4, 0.4));
+    const slingshot = new Slingshot(vec3(-3, -1, -5), vec3(0, -45, 0), vec3(0.4, 0.4, 0.4));
     slingshot.createSlingshotBase();
     models.push(slingshot);
 
-
     let slingshotBend = 0;
+    let launch = false;
+    let pullBack = true;
+    let fire = false;
+
+    function updateSlingshot() {
+        if (launch === true) {
+            if (pullBack === true) {
+                slingshotBend += 0.1;
+                if (slingshotBend >= 8) {
+                    pullBack = false;
+                }
+            }
+            else if (fire === true) {
+                slingshotBend -= 1;
+                if (slingshotBend <= 0) {
+                    launch = false;
+                    //set for next launch
+                    pullBack = true;
+                    slingshotBend = 0;
+                }
+            }
+        }
+    }
+
+    function launchSlingshot() {
+        if (pullBack === false && fire === false) {
+            launch = true;
+            fire = true;
+        }
+        else {
+            launch = true;
+            fire = false;
+            pullBack = true;
+        }
+    }
+
+
     // Animation loop
     function render(currentTime = 0) {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+        //update boneMatrix1 if launching has been triggered
+        updateSlingshot();
         //set bone matrices for bending slingshot
         let boneMatrix0 = mat4();
-        let boneMatrix1 = mult(translate(0, 0, slingshotBend), boneMatrix0);
+        let boneMatrix1 = mult(translate(0, -slingshotBend/2, slingshotBend), boneMatrix0);
         let boneMatrix2 = mat4();
-        slingshotBend += 0.05;
 
         setUniformMatrix("boneMatrix0", boneMatrix0);
         setUniformMatrix("boneMatrix1", boneMatrix1);
