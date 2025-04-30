@@ -494,7 +494,7 @@ function main() {
             //only apply shape deformation if model is pig
             if (model.name === "Pig") {
                 if (deformPig < 2.5 && pigIsDying) {
-                    deformPig += 0.01;
+                    deformPig += 0.02;
                 }
                 gl.uniform1i(gl.getUniformLocation(program, "isPig"), 1);
                 gl.uniform3fv(gl.getUniformLocation(program, "pigPosition"), flatten(model.position));
