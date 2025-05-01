@@ -357,14 +357,17 @@ function main() {
     canvas.addEventListener('click', updatePig);
 
     // Create model for first bird
-    const red = new Model(
-        "RedAngryBird/The_red_angry_bird_0428193917_texture.obj",
-        "RedAngryBird/The_red_angry_bird_0428193917_texture.mtl",
+    const bird1 = new Model(
+        "RedAngryBird/12260_Bird_Toucan_v3_l2.obj",
+        "RedAngryBird/12260_Bird_Toucan_v3_l2.mtl",
         "Bird1",
         [1.0, 0.2, 0.2, 1.0]
     );
-    red.position = vec3(-3.0, 1.5, -7.5);
-    models.push(red);
+    bird1.position = vec3(2.0, 0.0, -4);
+    bird1.scale = vec3(0.12, 0.12, 0.12);
+    bird1.rotation = vec3(270, 200, 0);
+    bird1.updateModelMatrix();
+    models.push(bird1);
 
     const bird2 = new Model(
         "BlueAngryBird/12248_Bird_v1_L2.obj",
@@ -375,6 +378,7 @@ function main() {
     bird2.position = vec3(-6, 0.0, -6);
     bird2.rotation = vec3(270, 0, 0);
     bird2.scale = vec3(0.05, 0.05, 0.05);
+    bird2.updateModelMatrix();
     models.push(bird2);
 
     const pig = new Model(
