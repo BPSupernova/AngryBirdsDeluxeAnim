@@ -369,8 +369,6 @@ function main() {
 
     tower = new Tower(5, vec3(12, 0, -6));
     canvas.addEventListener('click', collapseTower);
-    //canvas.addEventListener('click', launchSlingshot);
-    canvas.addEventListener('click', updatePig);
 
     // Create model for first bird
     const red = new Model(
@@ -498,9 +496,13 @@ function main() {
     render();
 }
 
-function updatePig() {
+function revivePig() {
     deformPig = 0;
-    pigIsDying = !pigIsDying;
+    pigIsDying = false;
+}
+
+function killPig() {
+    pigIsDying = true;
 }
 
 let slingshotBend = 0;
@@ -516,6 +518,7 @@ function updateSlingshot(bird) {
             slingshotBend += 0.1;
             //move bird back with slingshot
             bird.addPosition(-0.007, -0.0035, 0.007);
+            revivePig();
             if (slingshotBend >= 8) {
                 pullBack = false;
                 console.log(bird.position);
@@ -530,7 +533,7 @@ function updateSlingshot(bird) {
                 pullBack = true;
                 slingshotBend = 0;
                 //pig died
-                updatePig();
+                killPig();
             }
         }
     }
