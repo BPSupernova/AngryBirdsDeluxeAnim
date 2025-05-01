@@ -3,10 +3,10 @@
 6
 1.0
 # Control point 1 (start position)
--0.567, 0.717, -0.433
+2.867, 0.317, -0.433
 270.0, 200.0, 0.0
 # Control point 2 (initial launch)
--3.0, 2.0, 0.0
+-0.7, 1.7, 0.0
 270.0, 200.0, 0.0
 # Control point 3 (apex of arc)
 0.0, 8.0, -7.0
