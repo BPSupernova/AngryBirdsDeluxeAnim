@@ -538,8 +538,6 @@ function killPig() {
     pigIsDying = true;
 }
 
-
-
 function prepareText() {
     divElement = document.querySelector("#divcontainer");
 
@@ -556,6 +554,10 @@ function prepareText() {
 
     divElement.appendChild(failText);
     divElement.appendChild(successText);
+
+    //set text back to default position
+    textX = 200;
+    textY = 200;
 }
 
 function renderText(text, textNode, textValue) {
@@ -588,13 +590,13 @@ function updateSlingshot(bird) {
             successText.remove();
             showFailText = false;
             showSuccessText = false;
+
             slingshotBend += 0.1;
             //move bird back with slingshot
             bird.addPosition(-0.007, -0.0035, 0.007);
             revivePig();
             if (slingshotBend >= 8) {
                 pullBack = false;
-                console.log(bird.position);
             }
         }
         //slingshot is fired
