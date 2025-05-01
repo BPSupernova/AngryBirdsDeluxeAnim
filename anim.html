@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Angry Birds Anim</title>
+    <title>Angry Birds Animation</title>
     <script id="vshader" type="x-shader/x-vertex">
         precision mediump float;
         attribute vec4 vPosition;
@@ -121,11 +121,16 @@
     <script type="text/javascript" src="lib/spline.js"></script>
     <script type="text/javascript" src="lib/physics.js"></script>
     <script type="text/javascript" src="anim.js"></script>
+
+    <link rel="stylesheet" href="anim.css">
 </head>
 
 <body onload="main()">
-    <canvas id="webgl" width="800" height="600">
-        Please use a browser that supports the "canvas" tag.
-    </canvas>
+    <div class="container">
+        <canvas id="webgl" width="800" height="600">
+            Please use a browser that supports the "canvas" tag.
+        </canvas>
+        <div id="divcontainer"></div>
+    </div>
 </body>
 </html>

@@ -20,10 +20,24 @@ let physicsVelocity = vec3(0, 0, 0);
 let deformPig = 0;
 let pigIsDying = false;
 
+//variables for setting when birds are used
 let redBird;
 let blueBird;
 let currentBird;
 let currentBirdFunction;
+
+//variables for moving text
+let divElement;
+let failText;
+let successText;
+let failTextNode;
+let successTextNode;
+let textX = 0;
+let textY = 0;
+let textXChange = 4;
+let textYChange = 3;
+let showFailText = false;
+let showSuccessText = false;
 
 class Model {
     constructor(objPath, mtlPath, name, colorOverride = null) {
@@ -367,6 +381,7 @@ function main() {
     gl.uniform1i(gl.getUniformLocation(program, "isBand"), 0);
     gl.uniform1i(gl.getUniformLocation(program, "isPig"), 0);
 
+    //set up the tower
     tower = new Tower(5, vec3(12, 0, -6));
     canvas.addEventListener('click', collapseTower);
 
@@ -419,6 +434,7 @@ function main() {
     slingshot.createSlingshotBase();
     models.push(slingshot);
 
+    //load the spline for the red bird
     loadSpline("spline.txt").then(data => {
         if (data) {
             console.log("Spline loaded successfully");
@@ -427,9 +443,7 @@ function main() {
         }
     });
 
-
-
-    //add event listener for physics motion
+    //add event listener for launching the birds
     window.addEventListener('keydown', (event) => {
         if (event.code === "Space") {
             launchSlingshot(currentBird, currentBirdFunction);
@@ -443,6 +457,9 @@ function main() {
             currentBirdFunction = launchRedBird;
         }
     });
+
+    //prepare text to be shown on screen
+    prepareText();
 
 
     // Animation loop
@@ -471,6 +488,14 @@ function main() {
 
         if (isTowerFalling) tower.update(currentTime);
         tower.render();
+
+        //render text if fail or success happens
+        if (showFailText) {
+            renderText(failText, failTextNode, "EPIC FAIL");
+        }
+        else if (showSuccessText) {
+            renderText(successText, successTextNode, "WOOOO YOU DID IT");
+        }
 
         // Render all models
         for (const model of models) {
@@ -505,6 +530,41 @@ function killPig() {
     pigIsDying = true;
 }
 
+
+
+function prepareText() {
+    divElement = document.querySelector("#divcontainer");
+
+    failText = document.createElement("div");
+    successText = document.createElement("div");
+
+    failText.className = "floating-div-fail";
+    successText.className = "floating-div-success";
+
+    failTextNode = document.createTextNode("");
+    failText.appendChild(failTextNode);
+    successTextNode = document.createTextNode("");
+    successText.appendChild(successTextNode);
+
+    divElement.appendChild(failText);
+    divElement.appendChild(successText);
+}
+
+function renderText(text, textNode, textValue) {
+    textX += textXChange;
+    textY += textYChange;
+    if (textX < 0 || textX > gl.canvas.width - text.offsetWidth) {
+        textXChange = -textXChange;
+    }
+    if (textY < 0 || textY > gl.canvas.height - text.offsetHeight) {
+        textYChange = -textYChange;
+    }
+
+    text.style.left = Math.floor(textX) + "px";
+    text.style.top  = Math.floor(textY) + "px";
+    textNode.nodeValue = textValue;
+}
+
 let slingshotBend = 0;
 let launch = false;
 let pullBack = true;
@@ -515,6 +575,11 @@ function updateSlingshot(bird) {
     if (launch === true) {
         //slingshot is pulled back
         if (pullBack === true) {
+            //get rid of any text
+            failText.remove();
+            successText.remove();
+            showFailText = false;
+            showSuccessText = false;
             slingshotBend += 0.1;
             //move bird back with slingshot
             bird.addPosition(-0.007, -0.0035, 0.007);
