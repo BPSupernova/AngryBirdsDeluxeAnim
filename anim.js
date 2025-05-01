@@ -20,6 +20,9 @@ let physicsVelocity = vec3(0, 0, 0);
 let deformPig = 0;
 let pigIsDying = false;
 
+let currentBird;
+let currentBirdFunction;
+
 class Model {
     constructor(objPath, mtlPath, name, colorOverride = null) {
         this.vertices = [];
@@ -69,6 +72,15 @@ class Model {
                 )
             )
         );
+    }
+
+    //add given values to the current position
+    addPosition(x, y, z) {
+        let newX = this.position[0] + x;
+        let newY = this.position[1] + y;
+        let newZ = this.position[2] + z;
+        this.position = vec3(newX, newY, newZ);
+        this.updateModelMatrix();
     }
 
     async loadModel() {
@@ -353,33 +365,37 @@ function main() {
 
     tower = new Tower(5, vec3(12, 0, -6));
     canvas.addEventListener('click', collapseTower);
-    canvas.addEventListener('click', launchSlingshot);
+    //canvas.addEventListener('click', launchSlingshot);
     canvas.addEventListener('click', updatePig);
 
     // Create model for first bird
-    const bird1 = new Model(
+    const red = new Model(
         "RedAngryBird/12260_Bird_Toucan_v3_l2.obj",
         "RedAngryBird/12260_Bird_Toucan_v3_l2.mtl",
-        "Bird1",
+        "Red",
         [1.0, 0.2, 0.2, 1.0]
     );
-    bird1.position = vec3(3.0, -1.0, 3.0);
-    bird1.scale = vec3(0.12, 0.12, 0.12);
-    bird1.rotation = vec3(270, 200, 0);
-    bird1.updateModelMatrix();
-    models.push(bird1);
+    red.position = vec3(3.0, -1.0, 3.0);
+    red.scale = vec3(0.12, 0.12, 0.12);
+    red.rotation = vec3(270, 200, 0);
+    red.updateModelMatrix();
+    models.push(red);
 
-    const bird2 = new Model(
+    const blue = new Model(
         "BlueAngryBird/12248_Bird_v1_L2.obj",
         "BlueAngryBird/12248_Bird_v1_L2.mtl",
-        "Bird2",
+        "Blue",
         [0.2, 0.0, 1.0, 1.0]
     );
-    bird2.position = vec3(-3, 0.0, -2);
-    bird2.rotation = vec3(270, 135, 0);
-    bird2.scale = vec3(0.05, 0.05, 0.05);
-    bird2.updateModelMatrix();
-    models.push(bird2);
+    blue.position = vec3(0, 1.0, -1);
+    blue.rotation = vec3(270, 135, 0);
+    blue.scale = vec3(0.05, 0.05, 0.05);
+    blue.updateModelMatrix();
+    models.push(blue);
+
+    //sets bird to be launched
+    currentBird = blue;
+    currentBirdFunction = launchBlueBird;
 
     const pig = new Model(
         "Pig/16433_Pig.obj",
@@ -397,11 +413,6 @@ function main() {
     slingshot.createSlingshotBase();
     models.push(slingshot);
 
-    let slingshotBend = 0;
-    let launch = false;
-    let pullBack = true;
-    let fire = false;
-
     loadSpline("spline.txt").then(data => {
         if (data) {
             console.log("Spline loaded successfully");
@@ -409,10 +420,8 @@ function main() {
             splineData.printSpline();
 
             window.addEventListener('keydown', (event) => {
-                if (event.code === 'Space' && !isAnimatingWSpline) {
-                    console.log("Starting spline animation");
-                    isAnimatingWSpline = true;
-                    splineAnimStartTime = performance.now();
+                if (event.code === 'KeyG' && !isAnimatingWSpline) {
+                    launchRedBird();
                 }
             });
         }
@@ -423,47 +432,12 @@ function main() {
     //add event listener for physics motion
     window.addEventListener('keydown', (event) => {
         if (event.code === "KeyF" && !isAnimatingWPhysics) {
-            console.log("starting physics animation");
-
-            //set original velocity for physics bird
-            initializePhysics(models[1]);
-
-            isAnimatingWPhysics = true;
-            physicsAnimStartTime = performance.now();
+            launchBlueBird();
+        }
+        else if (event.code === "Space") {
+            launchSlingshot(currentBird, currentBirdFunction);
         }
     });
-
-    function updateSlingshot() {
-        if (launch === true) {
-            if (pullBack === true) {
-                slingshotBend += 0.1;
-                if (slingshotBend >= 8) {
-                    pullBack = false;
-                }
-            }
-            else if (fire === true) {
-                slingshotBend -= 1;
-                if (slingshotBend <= 0) {
-                    launch = false;
-                    //set for next launch
-                    pullBack = true;
-                    slingshotBend = 0;
-                }
-            }
-        }
-    }
-
-    function launchSlingshot() {
-        if (pullBack === false && fire === false) {
-            launch = true;
-            fire = true;
-        }
-        else {
-            launch = true;
-            fire = false;
-            pullBack = true;
-        }
-    }
 
 
     // Animation loop
@@ -471,7 +445,7 @@ function main() {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         //update boneMatrix1 if launching has been triggered
-        updateSlingshot();
+        updateSlingshot(currentBird);
         //set bone matrices for bending slingshot
         let boneMatrix0 = mat4();
         let boneMatrix1 = mult(translate(0, -slingshotBend/2, slingshotBend), boneMatrix0);
@@ -520,6 +494,69 @@ function main() {
 function updatePig() {
     deformPig = 0;
     pigIsDying = !pigIsDying;
+}
+
+let slingshotBend = 0;
+let launch = false;
+let pullBack = true;
+let fire = false;
+
+function updateSlingshot(bird) {
+    //slingshot has been triggered
+    if (launch === true) {
+        //slingshot is pulled back
+        if (pullBack === true) {
+            slingshotBend += 0.1;
+            bird.addPosition(-0.007, -0.0035, 0.007);
+            if (slingshotBend >= 8) {
+                pullBack = false;
+            }
+        }
+        //slingshot is fired
+        else if (fire === true) {
+            slingshotBend -= 1;
+            if (slingshotBend <= 0) {
+                launch = false;
+                //set for next launch
+                pullBack = true;
+                slingshotBend = 0;
+                //pig died
+                updatePig();
+            }
+        }
+    }
+}
+
+function launchSlingshot(bird, launchBird) {
+    //set slingshot to fire mode
+    if (pullBack === false && fire === false) {
+        launchBird();
+        launch = true;
+        fire = true;
+    }
+    //set slingshot to pullback mode
+    else {
+        bird.position = vec3(0, 1.0, -1);
+        launch = true;
+        fire = false;
+        pullBack = true;
+    }
+}
+
+function launchRedBird() {
+    console.log("Starting spline animation");
+    isAnimatingWSpline = true;
+    splineAnimStartTime = performance.now();
+}
+
+function launchBlueBird() {
+    console.log("starting physics animation");
+
+    //set original velocity for physics bird
+    initializePhysics(models[1]);
+
+    isAnimatingWPhysics = true;
+    physicsAnimStartTime = performance.now();
 }
 
 //creates model matrix based on given transformations
