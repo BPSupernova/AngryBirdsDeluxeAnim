@@ -20,6 +20,8 @@ let physicsVelocity = vec3(0, 0, 0);
 let deformPig = 0;
 let pigIsDying = false;
 
+let redBird;
+let blueBird;
 let currentBird;
 let currentBirdFunction;
 
@@ -380,6 +382,7 @@ function main() {
     red.rotation = vec3(270, 200, 0);
     red.updateModelMatrix();
     models.push(red);
+    redBird = red;
 
     const blue = new Model(
         "BlueAngryBird/12248_Bird_v1_L2.obj",
@@ -387,11 +390,12 @@ function main() {
         "Blue",
         [0.2, 0.0, 1.0, 1.0]
     );
-    blue.position = vec3(0, 1.0, -1);
+    blue.position = vec3(-3, 0.0, -2);
     blue.rotation = vec3(270, 135, 0);
     blue.scale = vec3(0.05, 0.05, 0.05);
     blue.updateModelMatrix();
     models.push(blue);
+    blueBird = blue;
 
     //sets bird to be launched
     currentBird = blue;
@@ -418,12 +422,6 @@ function main() {
             console.log("Spline loaded successfully");
             splineData = data;
             splineData.printSpline();
-
-            window.addEventListener('keydown', (event) => {
-                if (event.code === 'KeyG' && !isAnimatingWSpline) {
-                    launchRedBird();
-                }
-            });
         }
     });
 
@@ -431,11 +429,16 @@ function main() {
 
     //add event listener for physics motion
     window.addEventListener('keydown', (event) => {
-        if (event.code === "KeyF" && !isAnimatingWPhysics) {
-            launchBlueBird();
-        }
-        else if (event.code === "Space") {
+        if (event.code === "Space") {
             launchSlingshot(currentBird, currentBirdFunction);
+        }
+        else if (event.code === "KeyF" && !isAnimatingWPhysics) {
+            currentBird = blueBird;
+            currentBirdFunction = launchBlueBird;
+        }
+        else if (event.code === 'KeyG' && !isAnimatingWSpline) {
+            currentBird = redBird;
+            currentBirdFunction = launchRedBird;
         }
     });
 
@@ -507,6 +510,7 @@ function updateSlingshot(bird) {
         //slingshot is pulled back
         if (pullBack === true) {
             slingshotBend += 0.1;
+            //move bird back with slingshot
             bird.addPosition(-0.007, -0.0035, 0.007);
             if (slingshotBend >= 8) {
                 pullBack = false;
