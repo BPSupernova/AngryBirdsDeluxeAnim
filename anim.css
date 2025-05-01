@@ -19,6 +19,7 @@
     font-size: 50px;
     white-space: nowrap;
     color: red;
+    font-family: "Comic Sans MS", sans-serif;
 }
 
 .floating-div-success {
@@ -26,4 +27,5 @@
     font-size: 50px;
     white-space: nowrap;
     color: lawngreen;
+    font-family: "Comic Sans MS", sans-serif;
 }
