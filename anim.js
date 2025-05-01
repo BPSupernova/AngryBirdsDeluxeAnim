@@ -334,7 +334,7 @@ function main() {
     gl.useProgram(program);
     
     // Set up matrices
-    viewMatrix = lookAt(vec3(0, 5, 10), vec3(0, 3, 0), vec3(0, 1, 0));
+    viewMatrix = lookAt(vec3(5, 5, 15), vec3(5, 3, 0), vec3(0, 1, 0));
     projMatrix = perspective(45, canvas.width/canvas.height, 0.1, 400);
     
     gl.uniformMatrix4fv(gl.getUniformLocation(program, "viewMatrix"), false, flatten(viewMatrix));
@@ -351,7 +351,7 @@ function main() {
     gl.uniform1i(gl.getUniformLocation(program, "isBand"), 0);
     gl.uniform1i(gl.getUniformLocation(program, "isPig"), 0);
 
-    createTower();
+    tower = new Tower(5, vec3(12, 0, -6));
     canvas.addEventListener('click', collapseTower);
     canvas.addEventListener('click', launchSlingshot);
     canvas.addEventListener('click', updatePig);
@@ -363,7 +363,7 @@ function main() {
         "Bird1",
         [1.0, 0.2, 0.2, 1.0]
     );
-    bird1.position = vec3(2.0, 0.0, -4);
+    bird1.position = vec3(3.0, -1.0, 3.0);
     bird1.scale = vec3(0.12, 0.12, 0.12);
     bird1.rotation = vec3(270, 200, 0);
     bird1.updateModelMatrix();
@@ -375,8 +375,8 @@ function main() {
         "Bird2",
         [0.2, 0.0, 1.0, 1.0]
     );
-    bird2.position = vec3(-6, 0.0, -6);
-    bird2.rotation = vec3(270, 0, 0);
+    bird2.position = vec3(-3, 0.0, -2);
+    bird2.rotation = vec3(270, 135, 0);
     bird2.scale = vec3(0.05, 0.05, 0.05);
     bird2.updateModelMatrix();
     models.push(bird2);
@@ -387,13 +387,13 @@ function main() {
         "Pig",
         [0.2, 1.0, 0.2, 1.0]
     );
-    pig.position = vec3(1.0, 4.9, -10);
-    pig.rotation = vec3(-90, -15, 0);
+    pig.position = vec3(10.0, 4.9, -6);
+    pig.rotation = vec3(-90, -45, 0);
     pig.scale = vec3(1.5, 1.5, 1.5);
     pig.updateModelMatrix();
     models.push(pig);
 
-    const slingshot = new Slingshot(vec3(-3, 0, -5), vec3(0, -45, 0), vec3(0.4, 0.4, 0.4));
+    const slingshot = new Slingshot(vec3(0, 0, 0), vec3(0, -45, 0), vec3(0.4, 0.4, 0.4));
     slingshot.createSlingshotBase();
     models.push(slingshot);
 
@@ -521,8 +521,6 @@ function updatePig() {
     deformPig = 0;
     pigIsDying = !pigIsDying;
 }
-
-
 
 //creates model matrix based on given transformations
 function createModelMatrix(position, rotation, scale) {
