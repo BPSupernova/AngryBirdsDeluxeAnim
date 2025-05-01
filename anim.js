@@ -70,6 +70,9 @@ class Model {
         this.originalRot = vec3(0, 0, 0);
 
         this.modelMatrix = mat4();
+
+        this.useQuaternion = false;
+        this.tempQuaternion = [0, 1, 0, 0];
         
         // Store the obj/mtl paths
         this.objPath = objPath;
@@ -81,19 +84,39 @@ class Model {
 
 
     updateModelMatrix() {
-        this.modelMatrix = mult(
-            translate(this.position[0], this.position[1], this.position[2]),
-            mult(
-                rotateZ(this.rotation[2]),
+        if (this.useQuaternion) {
+            // Convert quaternion to rotation matrix only when flag is set
+            const [w, x, y, z] = this.tempQuaternion;
+            const rotationMat = mat4(
+                1 - 2*y*y - 2*z*z, 2*x*y - 2*z*w,     2*x*z + 2*y*w,     0,
+                2*x*y + 2*z*w,     1 - 2*x*x - 2*z*z, 2*y*z - 2*x*w,     0,
+                2*x*z - 2*y*w,     2*y*z + 2*x*w,     1 - 2*x*x - 2*y*y, 0,
+                0,                 0,                 0,                 1
+            );
+            
+            this.modelMatrix = mult(
+                translate(this.position[0], this.position[1], this.position[2]),
                 mult(
-                    rotateY(this.rotation[1]),
+                    rotationMat,
+                    scalem(this.scale[0], this.scale[1], this.scale[2])
+                )
+            );
+        } else {
+            // Default to Euler angles
+            this.modelMatrix = mult(
+                translate(this.position[0], this.position[1], this.position[2]),
+                mult(
+                    rotateZ(this.rotation[2]),
                     mult(
-                        rotateX(this.rotation[0]),
-                        scalem(this.scale[0], this.scale[1], this.scale[2])
+                        rotateY(this.rotation[1]),
+                        mult(
+                            rotateX(this.rotation[0]),
+                            scalem(this.scale[0], this.scale[1], this.scale[2])
+                        )
                     )
                 )
-            )
-        );
+            );
+        }
     }
 
     //add given values to the current position
@@ -633,6 +656,11 @@ function launchSlingshot(bird, launchBird) {
 
 function launchRedBird() {
     console.log("Starting spline animation");
+    const initialPoint = splineData.pointsData[0];
+    redBird.position = vec3(initialPoint.pos.x, initialPoint.pos.y, initialPoint.pos.z);
+    redBird.rotation = redBird.originalRot; // Make sure we start with the original rotation
+    redBird.updateModelMatrix();
+    
     isAnimatingWSpline = true;
     splineAnimStartTime = performance.now();
 }
