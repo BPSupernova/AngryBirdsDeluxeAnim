@@ -49,6 +49,8 @@ class Model {
         this.position = vec3(0, 0, 0);
         this.rotation = vec3(0, 0, 0);
         this.scale = vec3(1, 1, 1);
+        this.originalRot = vec3(0, 0, 0);
+
         this.modelMatrix = mat4();
         
         // Store the obj/mtl paths
@@ -383,6 +385,7 @@ function main() {
     red.updateModelMatrix();
     models.push(red);
     redBird = red;
+    red.originalRot = red.rotation;
 
     const blue = new Model(
         "BlueAngryBird/12248_Bird_v1_L2.obj",
@@ -396,6 +399,7 @@ function main() {
     blue.updateModelMatrix();
     models.push(blue);
     blueBird = blue;
+    blue.originalRot = blue.rotation;
 
     //sets bird to be launched
     currentBird = blue;
@@ -514,6 +518,7 @@ function updateSlingshot(bird) {
             bird.addPosition(-0.007, -0.0035, 0.007);
             if (slingshotBend >= 8) {
                 pullBack = false;
+                console.log(bird.position);
             }
         }
         //slingshot is fired
@@ -541,6 +546,7 @@ function launchSlingshot(bird, launchBird) {
     //set slingshot to pullback mode
     else {
         bird.position = vec3(0, 1.0, -1);
+        bird.rotation = bird.originalRot;
         launch = true;
         fire = false;
         pullBack = true;
