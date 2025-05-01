@@ -1,19 +1,22 @@
 # spline_launch.txt
 1
-5
-5.0
+6
+1.0
 # Control point 1 (start position)
--3.0, 2.0, 0.0
--90.0, 0.0, 0.0
+-0.567, 0.717, -0.433
+0.0, 0.0, 0.0
 # Control point 2 (initial launch)
 -3.0, 2.0, 0.0
 -180.0, 0.0, 0.0
 # Control point 3 (apex of arc)
-5.0, 8.0, -5.0
--270.0, 0.0, 0.0
+0.0, 8.0, -7.0
+0.0, 0.0, 0.0
 # Control point 4 (descending)
-15.0, 5.0, -10.0
--360.0, 0.0, 0.0
-# Control point 5 (far right, off camera)
-30.0, 1.0, -15.0
--450.0, 0.0, 0.0
+5.0, 5.0, -15.0
+0.0, 0.0, 0.0
+# Control point 5 (on ground)
+10.0, 0.0, -21.0
+0.0, 0.0, 0.0
+# Control point 6 (far right, off camera)
+10.0, 0.0, -22.0
+0.0, 0.0, 0.0

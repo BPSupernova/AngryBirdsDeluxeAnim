@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Angry Birds Anim</title>
     <script id="vshader" type="x-shader/x-vertex">
+        precision mediump float;
         attribute vec4 vPosition;
         attribute vec3 vNormal;
         attribute vec4 vColor;
@@ -19,12 +20,14 @@
         varying vec3 fView;
         varying vec4 fColor;
 
-
-
         uniform int isBand;
         uniform mat4 boneMatrix0;
         uniform mat4 boneMatrix1;
         uniform mat4 boneMatrix2;
+
+        uniform vec3 pigPosition;
+        uniform float deformPig;
+        uniform int isPig;
 
         void main() {
             mat4 bone0 = vWeight[0] * boneMatrix0;
@@ -42,6 +45,32 @@
 
             if (isBand == 1) {
                 gl_Position = projMatrix * viewMatrix * modelMatrix * bentPoint;
+            }
+            //deform the pig
+            else if (isPig == 1) {
+
+                vec4 pos = modelMatrix * vPosition;
+
+                //deform towards center of pig
+                pos.x = pos.x - pigPosition[0];
+                pos.x = pos.x - 2.0;
+                pos.y = pos.y - pigPosition[1];
+                pos.z = pos.z - pigPosition[2];
+
+                float k = deformPig;
+                float maxy = 4.0;
+                float miny = 0.0;
+                float sy = (maxy - (pos.y * k)) / (maxy - (miny * k));
+                pos.x = sy * pos.x;
+                pos.z = sy * pos.z;
+
+                //set positions normally again
+                pos.x = pos.x + pigPosition[0];
+                pos.x = pos.x + 2.0;
+                pos.y = pos.y + pigPosition[1];
+                pos.z = pos.z + pigPosition[2];
+
+                gl_Position = projMatrix * viewMatrix * pos;
             }
             else {
                 gl_Position = projMatrix * viewMatrix * worldPos;
@@ -91,6 +120,7 @@
     <script type="text/javascript" src="lib/slingshot.js"></script>
     <script type="text/javascript" src="lib/spline.js"></script>
     <script type="text/javascript" src="lib/quaternion.js"></script>
+    <script type="text/javascript" src="lib/physics.js"></script>
     <script type="text/javascript" src="anim.js"></script>
 </head>
 
