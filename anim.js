@@ -39,6 +39,10 @@ let textYChange = 3;
 let showFailText = false;
 let showSuccessText = false;
 
+//variables for changing angle of physics model
+let verticalAngle = 45;
+let horizontalAngle = -35;
+
 class Model {
     constructor(objPath, mtlPath, name, colorOverride = null) {
         this.vertices = [];
@@ -461,6 +465,10 @@ function main() {
     //prepare text to be shown on screen
     prepareText();
 
+    //event listeners for angles
+    document.getElementById("verticalAngle").addEventListener("input", e => verticalAngle = parseFloat(e.target.value));
+    document.getElementById("horizontalAngle").addEventListener("input", e => horizontalAngle = parseFloat(e.target.value));
+
 
     // Animation loop
     function render(currentTime = 0) {
@@ -631,7 +639,7 @@ function launchBlueBird() {
     console.log("starting physics animation");
 
     //set original velocity for physics bird
-    initializePhysics(models[1]);
+    initializePhysics(models[1], verticalAngle, horizontalAngle);
 
     isAnimatingWPhysics = true;
     physicsAnimStartTime = performance.now();
