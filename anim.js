@@ -42,7 +42,7 @@ let showSuccessText = false;
 
 //variables for changing angle of physics model
 let verticalAngle = 45;
-let horizontalAngle = -35;
+let horizontalAngle = 45;
 let verticalAngleElement;
 let verticalAngleNode;
 let horizontalAngleElement;
