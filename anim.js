@@ -505,6 +505,10 @@ function main() {
     document.getElementById("verticalAngleSlider").addEventListener("input", e => verticalAngle = parseFloat(e.target.value));
     document.getElementById("horizontalAngleSlider").addEventListener("input", e => horizontalAngle = parseFloat(e.target.value));
 
+    //maintain slider values from last reload
+    verticalAngle = parseInt(document.getElementById("verticalAngleSlider").value);
+    horizontalAngle = parseInt(document.getElementById("horizontalAngleSlider").value);
+
     //play theme song
     let theme = new Audio('/Audio/angrybirdstheme.mp3');
     theme.loop = true;
@@ -548,7 +552,7 @@ function main() {
 
         //show vertical and horizontal angle values to user
         verticalAngleNode.nodeValue = verticalAngle;
-        horizontalAngleNode.nodeValue = horizontalAngle;
+        horizontalAngleNode.nodeValue = horizontalAngle + 90;
 
         // Render all models
         for (const model of models) {

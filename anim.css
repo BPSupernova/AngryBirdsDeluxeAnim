@@ -15,6 +15,12 @@ body {
     margin-right: auto;
     margin-bottom: 10px;
 }
+
+.angleLabel {
+    font-family: "Lucida Sans Typewriter", sans-serif;
+    width: 100%;
+}
+
 #divcontainer {
     position: absolute;
     left: 0px;
@@ -26,12 +32,28 @@ body {
 }
 
 #ui-panel {
-    z-index: 1000;
     position: absolute;
+    display: grid;
+    grid-template-columns: 80% 20%;
+    grid-template-rows: 50% 50%;
+
     right: 10px;
     bottom: 10px;
-    background-color: hotpink;
+    padding: 10px 10px 2px;
+    width: 230px;
+    height: initial;
+    background-color: lightgray;
+    z-index: 1000;
+
+    border: orangered 5px solid;
+    border-radius: 12px;
 }
+
+#verticalAngle, #horizontalAngle {
+    font-size: 25px;
+    font-family: "Lucida Sans Typewriter", sans-serif;
+}
+
 
 .floating-div-fail {
     position: absolute;
