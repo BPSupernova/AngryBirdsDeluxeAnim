@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Angry Birds Anim</title>
+    <title>Angry Birds Animation</title>
     <script id="vshader" type="x-shader/x-vertex">
         precision mediump float;
         attribute vec4 vPosition;
@@ -122,11 +122,44 @@
     <script type="text/javascript" src="lib/quaternion.js"></script>
     <script type="text/javascript" src="lib/physics.js"></script>
     <script type="text/javascript" src="anim.js"></script>
+
+    <link rel="stylesheet" href="anim.css">
 </head>
 
 <body onload="main()">
-    <canvas id="webgl" width="800" height="600">
-        Please use a browser that supports the "canvas" tag.
-    </canvas>
+    <img class="logo" src="Images/logo.gif" alt="sick logo">
+    <div style="display: flex; justify-content: center; align-items: center; flex-direction: column">
+        <div style="display: flex; justify-content: center; align-items: center">
+            <img src="Images/angrybirdsposter.jpg" alt="epic angry birds poster" width="300" height="600">
+            <div class="container">
+                <canvas id="webgl" width="800" height="600">
+                    Please use a browser that supports the "canvas" tag.
+                </canvas>
+                <div id="ui-panel">
+                    <div>
+                        <label class="angleLabel">Vertical Angle:</label><br>
+                        <input type="range" id="verticalAngleSlider" min="0" max="90" step="1" value="45"><br>
+                    </div>
+                    <span id = "verticalAngle"></span>
+                    <div>
+                        <label class="angleLabel">Horizontal Angle:</label><br>
+                        <input type="range" id="horizontalAngleSlider" min="-90" max="0" step="1" value="-35">
+                    </div>
+                    <span id ="horizontalAngle"></span>
+                </div>
+                <div id="divcontainer"></div>
+            </div>
+            <img src="Images/angrybirdsposter.jpg" alt="epic angry birds poster" width="300" height="600">
+        </div>
+        <div>
+            <p>
+                Welcome to Angry Birds Remastered! This is the best angry birds game you'll ever play. <br>
+                Press <b>G</b> to select the red bird and test it out! He's not very good though... <br>
+                Or press <b>F</b> to select the blue bird! You'll have more control over him. Use the <b>sliders</b> to adjust his angle.<br>
+                When you've selected either bird, press <b>space</b> to pull the slingshot back, then press it again to fire! <br>
+                Happy launching!
+            </p>
+        </div>
+    </div>
 </body>
 </html>
