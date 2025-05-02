@@ -127,15 +127,25 @@
 </head>
 
 <body onload="main()">
-    <div class="container">
-        <canvas id="webgl" width="800" height="600">
-            Please use a browser that supports the "canvas" tag.
-        </canvas>
-        <div id="divcontainer"></div>
-    </div>
-    <div id="ui-panel">
-        <label>Vertical Angle: <input type="range" id="verticalAngle" min="0" max="90" step="1" value="45"></label><br>
-        <label>Horizontal Angle: <input type="range" id="horizontalAngle" min="-90" max="0" step="1" value="-35"></label>
+    <div style="display: flex; justify-content: center; align-items: center; flex-direction: column">
+        <div class="container">
+            <canvas id="webgl" width="800" height="600">
+                Please use a browser that supports the "canvas" tag.
+            </canvas>
+            <div id="divcontainer"></div>
+        </div>
+        <div id="ui-panel">
+            <div>
+                <label>Vertical Angle</label><br>
+                <span id = "verticalAngle"></span>
+                <input type="range" id="verticalAngleSlider" min="0" max="90" step="1" value="45"><br>
+            </div>
+            <div>
+                <label>Horizontal Angle</label><br>
+                <span id ="horizontalAngle"></span>
+                <input type="range" id="horizontalAngleSlider" min="-90" max="0" step="1" value="-35">
+            </div>
+        </div>
     </div>
 </body>
 </html>

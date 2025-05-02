@@ -43,6 +43,10 @@ let showSuccessText = false;
 //variables for changing angle of physics model
 let verticalAngle = 45;
 let horizontalAngle = -35;
+let verticalAngleElement;
+let verticalAngleNode;
+let horizontalAngleElement;
+let horizontalAngleNode;
 
 class Model {
     constructor(objPath, mtlPath, name, colorOverride = null) {
@@ -488,9 +492,16 @@ function main() {
     //prepare text to be shown on screen
     prepareText();
 
+    //set elements to show angle values
+    verticalAngleElement = document.querySelector("#verticalAngle");
+    horizontalAngleElement = document.querySelector("#horizontalAngle");
+    verticalAngleNode = document.createTextNode("");
+    horizontalAngleNode = document.createTextNode("");
+    verticalAngleElement.appendChild(verticalAngleNode);
+    horizontalAngleElement.appendChild(horizontalAngleNode);
     //event listeners for angles
-    document.getElementById("verticalAngle").addEventListener("input", e => verticalAngle = parseFloat(e.target.value));
-    document.getElementById("horizontalAngle").addEventListener("input", e => horizontalAngle = parseFloat(e.target.value));
+    document.getElementById("verticalAngleSlider").addEventListener("input", e => verticalAngle = parseFloat(e.target.value));
+    document.getElementById("horizontalAngleSlider").addEventListener("input", e => horizontalAngle = parseFloat(e.target.value));
 
 
     // Animation loop
@@ -527,6 +538,10 @@ function main() {
         else if (showSuccessText) {
             renderText(successText, successTextNode, "WOOOO YOU DID IT");
         }
+
+        //show vertical and horizontal angle values to user
+        verticalAngleNode.nodeValue = verticalAngle;
+        horizontalAngleNode.nodeValue = horizontalAngle;
 
         // Render all models
         for (const model of models) {
