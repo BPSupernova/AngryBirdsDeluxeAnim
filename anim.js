@@ -505,6 +505,11 @@ function main() {
     document.getElementById("verticalAngleSlider").addEventListener("input", e => verticalAngle = parseFloat(e.target.value));
     document.getElementById("horizontalAngleSlider").addEventListener("input", e => horizontalAngle = parseFloat(e.target.value));
 
+    //play theme song
+    let theme = new Audio('/Audio/angrybirdstheme.mp3');
+    theme.loop = true;
+    theme.volume = 0.5;
+    theme.play();
 
     // Animation loop
     function render(currentTime = 0) {
