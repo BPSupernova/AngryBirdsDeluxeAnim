@@ -1,8 +1,19 @@
+body {
+    background-color: #68DD85;
+}
+
 .container {
     position: relative;
     overflow: hidden;
     width: 800px;
     height: 600px;
+}
+
+.logo {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 10px;
 }
 #divcontainer {
     position: absolute;
