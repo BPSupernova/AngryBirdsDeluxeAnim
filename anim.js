@@ -48,6 +48,9 @@ let verticalAngleNode;
 let horizontalAngleElement;
 let horizontalAngleNode;
 
+//variables for skybox
+let skybox;
+
 let launchSound = new Audio('/Audio/angrybirdslaunch.mp3');
 
 class Model {
@@ -411,9 +414,10 @@ function main() {
     gl.uniform4fv(gl.getUniformLocation(program, "specularProduct"), flatten([1.0, 1.0, 1.0, 1.0]));
     gl.uniform1f(gl.getUniformLocation(program, "shininess"), 100.0);
 
-    //set boolean to mark that what is drawn is not the slingshot band or pig
+    //set boolean to mark that what is drawn is not the slingshot band, pig, or skybox
     gl.uniform1i(gl.getUniformLocation(program, "isBand"), 0);
     gl.uniform1i(gl.getUniformLocation(program, "isPig"), 0);
+    gl.uniform1i(gl.getUniformLocation(program, "isSkybox"), 0);
 
     //set up the tower
     tower = new Tower(5, vec3(12, 0, -6));
@@ -466,6 +470,11 @@ function main() {
     const slingshot = new Slingshot(vec3(0, 0, 0), vec3(0, -45, 0), vec3(0.4, 0.4, 0.4));
     slingshot.createSlingshotBase();
     models.push(slingshot);
+
+    //create skybox
+    skybox = new Skybox();
+    skybox.scale = vec3(110, 110, 110);
+    skybox.updateModelMatrix();
 
     //load the spline for the red bird
     loadSpline("spline.txt").then(data => {
@@ -541,6 +550,8 @@ function main() {
 
         if (isTowerFalling) tower.update(currentTime);
         tower.render();
+
+        skybox.render();
 
         //render text if fail or success happens
         if (showFailText) {

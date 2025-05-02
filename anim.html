@@ -29,6 +29,8 @@
         uniform float deformPig;
         uniform int isPig;
 
+        varying vec3 fSkyboxTexCoord;
+
         void main() {
             mat4 bone0 = vWeight[0] * boneMatrix0;
             mat4 bone1 = vWeight[1] * boneMatrix1;
@@ -42,6 +44,8 @@
             fView = -worldPos.xyz;
 
             fColor = vColor;
+
+            fSkyboxTexCoord = (modelMatrix * vPosition).xyz;
 
             if (isBand == 1) {
                 gl_Position = projMatrix * viewMatrix * modelMatrix * bentPoint;
@@ -91,25 +95,34 @@
         uniform vec4 specularProduct;
         uniform float shininess;
 
+        uniform int isSkybox;
+        uniform samplerCube tex0;
+        varying vec3 fSkyboxTexCoord;
+
         void main() {
-            // Normalize vectors
-            vec3 N = normalize(fNormal);
-            vec3 L = normalize(fLight);
-            vec3 V = normalize(fView);
-            vec3 H = normalize(L + V);
+            if (isSkybox == 1) {
+                gl_FragColor = textureCube(tex0, fSkyboxTexCoord);
+            }
+            else {
+                // Normalize vectors
+                vec3 N = normalize(fNormal);
+                vec3 L = normalize(fLight);
+                vec3 V = normalize(fView);
+                vec3 H = normalize(L + V);
 
-            // Calculate lighting components
-            float Kd = max(dot(L, N), 0.0);
-            vec4 diffuse = Kd * diffuseProduct * fColor;
+                // Calculate lighting components
+                float Kd = max(dot(L, N), 0.0);
+                vec4 diffuse = Kd * diffuseProduct * fColor;
 
-            float Ks = pow(max(dot(N, H), 0.0), shininess);
-            vec4 specular = Ks * specularProduct;
+                float Ks = pow(max(dot(N, H), 0.0), shininess);
+                vec4 specular = Ks * specularProduct;
 
-            vec4 ambient = ambientProduct * fColor;
+                vec4 ambient = ambientProduct * fColor;
 
-            // Combine lighting components
-            gl_FragColor = ambient + diffuse + specular;
-            gl_FragColor.a = 1.0;
+                // Combine lighting components
+                gl_FragColor = ambient + diffuse + specular;
+                gl_FragColor.a = 1.0;
+            }
         }
     </script>
 
@@ -121,6 +134,7 @@
     <script type="text/javascript" src="lib/spline.js"></script>
     <script type="text/javascript" src="lib/quaternion.js"></script>
     <script type="text/javascript" src="lib/physics.js"></script>
+    <script type="text/javascript" src="lib/skybox.js"></script>
     <script type="text/javascript" src="anim.js"></script>
 
     <link rel="stylesheet" href="anim.css">
