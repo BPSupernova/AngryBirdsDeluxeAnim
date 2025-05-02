@@ -25,6 +25,7 @@ let redBird;
 let blueBird;
 let currentBird;
 let currentBirdFunction;
+let animationInProgress = false;
 
 //variables for moving text
 let divElement;
@@ -410,7 +411,6 @@ function main() {
 
     //set up the tower
     tower = new Tower(5, vec3(12, 0, -6));
-    canvas.addEventListener('click', collapseTower);
 
     // Create model for first bird
     const red = new Model(
@@ -472,14 +472,14 @@ function main() {
 
     //add event listener for launching the birds
     window.addEventListener('keydown', (event) => {
-        if (event.code === "Space") {
+        if (event.code === "Space" && !animationInProgress) {
             launchSlingshot(currentBird, currentBirdFunction);
         }
-        else if (event.code === "KeyF" && !isAnimatingWPhysics) {
+        else if (event.code === "KeyF" && !animationInProgress) {
             currentBird = blueBird;
             currentBirdFunction = launchBlueBird;
         }
-        else if (event.code === 'KeyG' && !isAnimatingWSpline) {
+        else if (event.code === 'KeyG' && !animationInProgress) {
             currentBird = redBird;
             currentBirdFunction = launchRedBird;
         }
@@ -620,6 +620,7 @@ function updateSlingshot(bird) {
             revivePig();
             if (slingshotBend >= 8) {
                 pullBack = false;
+                animationInProgress = false;
             }
         }
         //slingshot is fired
@@ -638,6 +639,7 @@ function updateSlingshot(bird) {
 }
 
 function launchSlingshot(bird, launchBird) {
+    animationInProgress = true;
     //set slingshot to fire mode
     if (pullBack === false && fire === false) {
         launchBird();
