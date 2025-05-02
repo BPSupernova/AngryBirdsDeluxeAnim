@@ -48,6 +48,8 @@ let verticalAngleNode;
 let horizontalAngleElement;
 let horizontalAngleNode;
 
+let launchSound = new Audio('/Audio/angrybirdslaunch.mp3');
+
 class Model {
     constructor(objPath, mtlPath, name, colorOverride = null) {
         this.vertices = [];
@@ -657,6 +659,7 @@ function launchSlingshot(bird, launchBird) {
     animationInProgress = true;
     //set slingshot to fire mode
     if (pullBack === false && fire === false) {
+        launchSound.play();
         launchBird();
         launch = true;
         fire = true;
