@@ -130,26 +130,26 @@
     <img class="logo" src="Images/logo.gif" alt="sick logo">
     <div style="display: flex; justify-content: center; align-items: center; flex-direction: column">
         <div style="display: flex; justify-content: center; align-items: center">
-            <img src="Images/angrybirdsposter.jpg" alt="epic angry birds poster" width="400" height="600">
+            <img src="Images/angrybirdsposter.jpg" alt="epic angry birds poster" width="300" height="600">
             <div class="container">
                 <canvas id="webgl" width="800" height="600">
                     Please use a browser that supports the "canvas" tag.
                 </canvas>
+                <div id="ui-panel">
+                    <div>
+                        <label>Vertical Angle</label><br>
+                        <span id = "verticalAngle"></span>
+                        <input type="range" id="verticalAngleSlider" min="0" max="90" step="1" value="45"><br>
+                    </div>
+                    <div>
+                        <label>Horizontal Angle</label><br>
+                        <span id ="horizontalAngle"></span>
+                        <input type="range" id="horizontalAngleSlider" min="-90" max="0" step="1" value="-35">
+                    </div>
+                </div>
                 <div id="divcontainer"></div>
             </div>
-            <img src="Images/angrybirdsposter.jpg" alt="epic angry birds poster" width="400" height="600">
-        </div>
-        <div id="ui-panel">
-            <div>
-                <label>Vertical Angle</label><br>
-                <span id = "verticalAngle"></span>
-                <input type="range" id="verticalAngleSlider" min="0" max="90" step="1" value="45"><br>
-            </div>
-            <div>
-                <label>Horizontal Angle</label><br>
-                <span id ="horizontalAngle"></span>
-                <input type="range" id="horizontalAngleSlider" min="-90" max="0" step="1" value="-35">
-            </div>
+            <img src="Images/angrybirdsposter.jpg" alt="epic angry birds poster" width="300" height="600">
         </div>
     </div>
 </body>
