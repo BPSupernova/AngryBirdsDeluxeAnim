@@ -415,9 +415,6 @@ function main() {
     gl.uniform1i(gl.getUniformLocation(program, "isBand"), 0);
     gl.uniform1i(gl.getUniformLocation(program, "isPig"), 0);
 
-    //set up the tower
-    tower = new Tower(5, vec3(12, 0, -6));
-
     // Create model for first bird
     const red = new Model(
         "RedAngryBird/12260_Bird_Toucan_v3_l2.obj",
@@ -462,6 +459,15 @@ function main() {
     pig.scale = vec3(1.5, 1.5, 1.5);
     pig.updateModelMatrix();
     models.push(pig);
+
+    pig.falling = false;
+    pig.fallStartTime = 0;
+    pig.velocity = vec3(0, 0, 0);
+    pig.angularVelocity = vec3(0, 0, 0);
+    pig.originalPos = vec3(pig.position);
+
+    //set up the tower
+    tower = new Tower(5, vec3(12, 0, -6), pig);
 
     const slingshot = new Slingshot(vec3(0, 0, 0), vec3(0, -45, 0), vec3(0.4, 0.4, 0.4));
     slingshot.createSlingshotBase();
