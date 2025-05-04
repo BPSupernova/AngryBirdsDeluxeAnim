@@ -3,20 +3,23 @@ let modelMatrix, viewMatrix, projMatrix;
 let models = [];
 let lightPosition = vec4(5.0, 10.0, 5.0, 1.0)
 
+//variables for the tower
 let tower;
 let isTowerFalling = false;
 let fallStartTime = 0;
 const G = 9.8;
 
+//variables for spline
 let splineData = null;
 let splineAnimStartTime = null;
 let isAnimatingWSpline = false;
-let currentSplinePoint = 0;
 
+//variables for physically-based animation
 let isAnimatingWPhysics = false;
 let physicsAnimStartTime = null;
 let physicsVelocity = vec3(0, 0, 0);
 
+//variables for pig
 let deformPig = 0;
 let pigIsDying = false;
 
@@ -54,6 +57,7 @@ let verticalAngleNode;
 let horizontalAngleElement;
 let horizontalAngleNode;
 
+//variable for launch sound
 let launchSound = new Audio('/Audio/angrybirdslaunch.mp3');
 
 function main() {
@@ -91,7 +95,7 @@ function main() {
     gl.uniform1i(gl.getUniformLocation(program, "isBand"), 0);
     gl.uniform1i(gl.getUniformLocation(program, "isPig"), 0);
 
-    // Create model for first bird
+    // Create model for red bird
     const red = new Model(
         "RedAngryBird/12260_Bird_Toucan_v3_l2.obj",
         "RedAngryBird/12260_Bird_Toucan_v3_l2.mtl",
@@ -107,6 +111,7 @@ function main() {
     redBird = red;
     red.originalRot = red.rotation;
 
+    // Create model for blue bird
     const blue = new Model(
         "BlueAngryBird/12248_Bird_v1_L2.obj",
         "BlueAngryBird/12248_Bird_v1_L2.mtl",
@@ -152,7 +157,7 @@ function main() {
 
     // Create the slingshot model
     const slingshot = new Slingshot(vec3(0, 0, 0), vec3(0, -45, 0), vec3(0.4, 0.4, 0.4));
-    slingshot.createSlingshotBase();
+    slingshot.createSlingshot();
     models.push(slingshot);
 
     // Load the spline for the red bird
@@ -219,15 +224,13 @@ function main() {
         setUniformMatrix("boneMatrix1", boneMatrix1);
         setUniformMatrix("boneMatrix2", boneMatrix2);
 
-
+        //update the positions for animations if they're playing
         if (isAnimatingWSpline && models[0] && models[0].loaded) {
             updateModelOnSpline(models[0], currentTime);
         }
-
         if (isAnimatingWPhysics && models[1] && models[1].loaded) {
             updateModelOnPhysics(models[1], currentTime);
         }
-
         if (isTowerFalling) tower.update(currentTime);
         tower.render();
 
@@ -267,15 +270,18 @@ function main() {
     render();
 }
 
+//revive the pig
 function revivePig() {
     deformPig = 0;
     pigIsDying = false;
 }
 
+//kill the pig
 function killPig() {
     pigIsDying = true;
 }
 
+//prepare text to be shown on screen
 function prepareText() {
     divElement = document.querySelector("#divcontainer");
 
@@ -298,6 +304,7 @@ function prepareText() {
     textY = 200;
 }
 
+//show text on screen
 function renderText(text, textNode, textValue) {
     textX += textXChange;
     textY += textYChange;
@@ -313,6 +320,7 @@ function renderText(text, textNode, textValue) {
     textNode.nodeValue = textValue;
 }
 
+//update the position of the slingshot and all applicable variables
 function updateSlingshot(bird) {
     // Slingshot has been triggered
     if (launch === true) {
@@ -348,6 +356,7 @@ function updateSlingshot(bird) {
     }
 }
 
+//trigger launch animation
 function launchSlingshot(bird, launchBird) {
     animationInProgress = true;
     // Set slingshot to fire mode
@@ -367,6 +376,7 @@ function launchSlingshot(bird, launchBird) {
     }
 }
 
+//begin launch of the red bird
 function launchRedBird() {
     console.log("Starting spline animation");
     const initialPoint = splineData.pointsData[0];
@@ -378,6 +388,7 @@ function launchRedBird() {
     splineAnimStartTime = performance.now();
 }
 
+//begin launch of the blue bird
 function launchBlueBird() {
     console.log("starting physics animation");
 
