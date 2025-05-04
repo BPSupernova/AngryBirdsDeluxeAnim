@@ -13,7 +13,7 @@ The blue bird's launch is calculated using physically-based animation.
 Pressing G will select the red bird's animation, and pressing F will select the blue bird's animation. Pressing the space bar will start the animation once selected, pulling back the selected bird. Pressing space again will launch the bird. 
 The sliders will adjust the angle of the blue bird's launch. This allows you to control its launch to fire it into the tower.
 
-The main challenge that we faced during the project was figuring out how to put everything together. Designing a project specifically to handle a spline or to create a skeletal animation is one thing, but when putting it all together, we had to make sure that all parts worked correctly without causing problems for a different part of the animation. 
+The main challenge that we faced during the project was figuring out how to put everything together. Designing a project specifically to handle a spline or to create a skeletal animation is one thing, but when putting it all together, we had to make sure that all parts worked correctly without causing problems for a different part of the animation. Animating the scene was tricky logistically too, since different functionality would be applied to the scene at different times. For instance, physically-based animation and splines never run at the same time, since they are applied to different birds, so it was interesting isolatating some behavior and combining others.
 
 Parts Zach worked on:
 - Creating the slingshot and the animation of its rubber band

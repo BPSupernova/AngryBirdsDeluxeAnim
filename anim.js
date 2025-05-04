@@ -3,40 +3,40 @@ let modelMatrix, viewMatrix, projMatrix;
 let models = [];
 let lightPosition = vec4(5.0, 10.0, 5.0, 1.0)
 
-//variables for the tower
+// Variables for the tower
 let tower;
 let isTowerFalling = false;
 let fallStartTime = 0;
 const G = 9.8;
 
-//variables for spline
+// Variables for spline
 let splineData = null;
 let splineAnimStartTime = null;
 let isAnimatingWSpline = false;
 
-//variables for physically-based animation
+// Variables for physically-based animation
 let isAnimatingWPhysics = false;
 let physicsAnimStartTime = null;
 let physicsVelocity = vec3(0, 0, 0);
 
-//variables for pig
+// Variables for pig
 let deformPig = 0;
 let pigIsDying = false;
 
-//variables for setting when birds are used
+// Variables for setting when birds are used
 let redBird;
 let blueBird;
 let currentBird;
 let currentBirdFunction;
 let animationInProgress = false;
 
-// Slingshot properties
+// Variables for the slingshot launching functionality
 let slingshotBend = 0;
 let launch = false;
 let pullBack = true;
 let fire = false;
 
-//variables for moving text
+// Variables for moving text
 let divElement;
 let failText;
 let successText;
@@ -49,7 +49,7 @@ let textYChange = 3;
 let showFailText = false;
 let showSuccessText = false;
 
-//variables for changing angle of physics model
+// Variables for changing angle of physics model
 let verticalAngle = 45;
 let horizontalAngle = 45;
 let verticalAngleElement;
@@ -57,7 +57,7 @@ let verticalAngleNode;
 let horizontalAngleElement;
 let horizontalAngleNode;
 
-//variable for launch sound
+// Variable for launch sound
 let launchSound = new Audio('/Audio/angrybirdslaunch.mp3');
 
 function main() {
