@@ -4,113 +4,133 @@
     <meta charset="UTF-8">
     <title>Angry Birds Animation</title>
     <script id="vshader" type="x-shader/x-vertex">
-        precision mediump float;
-        attribute vec4 vPosition;
-        attribute vec3 vNormal;
-        attribute vec4 vColor;
-        attribute vec4 vWeight;
-
-        uniform mat4 modelMatrix;
-        uniform mat4 viewMatrix;
-        uniform mat4 projMatrix;
-        uniform vec4 lightPosition;
-
-        varying vec3 fNormal;
-        varying vec3 fLight;
-        varying vec3 fView;
-        varying vec4 fColor;
-
-        uniform int isBand;
-        uniform mat4 boneMatrix0;
-        uniform mat4 boneMatrix1;
-        uniform mat4 boneMatrix2;
-
-        uniform vec3 pigPosition;
-        uniform float deformPig;
-        uniform int isPig;
-
-        void main() {
-            mat4 bone0 = vWeight[0] * boneMatrix0;
-            mat4 bone1 = vWeight[1] * boneMatrix1;
-            mat4 bone2 = vWeight[2] * boneMatrix2;
-            vec4 bentPoint = (bone0 * vPosition) + (bone1 * vPosition) + (bone2 * vPosition);
-
-            vec4 worldPos = modelMatrix * vPosition;
-            fNormal = (modelMatrix * vec4(vNormal, 0.0)).xyz;
-
-            fLight = lightPosition.xyz - worldPos.xyz;
-            fView = -worldPos.xyz;
-
-            fColor = vColor;
-
-            if (isBand == 1) {
-                gl_Position = projMatrix * viewMatrix * modelMatrix * bentPoint;
-            }
-            //deform the pig
-            else if (isPig == 1) {
-
-                vec4 pos = modelMatrix * vPosition;
-
-                //deform towards center of pig
-                pos.x = pos.x - pigPosition[0];
-                pos.x = pos.x - 2.0;
-                pos.y = pos.y - pigPosition[1];
-                pos.z = pos.z - pigPosition[2];
-
-                float k = deformPig;
-                float maxy = 4.0;
-                float miny = 0.0;
-                float sy = (maxy - (pos.y * k)) / (maxy - (miny * k));
-                pos.x = sy * pos.x;
-                pos.z = sy * pos.z;
-
-                //set positions normally again
-                pos.x = pos.x + pigPosition[0];
-                pos.x = pos.x + 2.0;
-                pos.y = pos.y + pigPosition[1];
-                pos.z = pos.z + pigPosition[2];
-
-                gl_Position = projMatrix * viewMatrix * pos;
-            }
-            else {
-                gl_Position = projMatrix * viewMatrix * worldPos;
-            }
-        }
+      precision mediump float;
+      attribute vec4 vPosition;
+      attribute vec3 vNormal;
+      attribute vec4 vColor;
+      attribute vec4 vWeight;
+      attribute vec2 vTexCoord;
+      
+      uniform mat4 modelMatrix;
+      uniform mat4 viewMatrix;
+      uniform mat4 projMatrix;
+      uniform vec4 lightPosition;
+      
+      varying vec3 fPosition;
+      varying vec3 fNormal;
+      varying vec3 fLight;
+      varying vec3 fView;
+      varying vec4 fColor;
+      varying vec2 fTexCoord;
+      
+      uniform int isBand;
+      uniform mat4 boneMatrix0;
+      uniform mat4 boneMatrix1;
+      uniform mat4 boneMatrix2;
+      
+      uniform bool isSkybox;
+      
+      uniform vec3 pigPosition;
+      uniform float deformPig;
+      uniform int isPig;
+      
+      void main() {
+          if (isSkybox) {
+              // For skybox, pass through texture coordinates and position
+              fPosition = vPosition.xyz;
+              fTexCoord = vTexCoord; // Added this line to pass texture coords
+              gl_Position = projMatrix * viewMatrix * modelMatrix * vPosition;
+          } else {
+              mat4 bone0 = vWeight[0] * boneMatrix0;
+              mat4 bone1 = vWeight[1] * boneMatrix1;
+              mat4 bone2 = vWeight[2] * boneMatrix2;
+              vec4 bentPoint = (bone0 * vPosition) + (bone1 * vPosition) + (bone2 * vPosition);
+      
+              vec4 worldPos = modelMatrix * vPosition;
+              fNormal = (modelMatrix * vec4(vNormal, 0.0)).xyz;
+      
+              fLight = lightPosition.xyz - worldPos.xyz;
+              fView = -worldPos.xyz;
+      
+              fColor = vColor;
+              fTexCoord = vTexCoord; // Make sure texCoord is always set
+      
+              if (isBand == 1) {
+                  gl_Position = projMatrix * viewMatrix * modelMatrix * bentPoint;
+              }
+              //deform the pig
+              else if (isPig == 1) {
+                  vec4 pos = modelMatrix * vPosition;
+      
+                  //deform towards center of pig
+                  pos.x = pos.x - pigPosition[0];
+                  pos.x = pos.x - 2.0;
+                  pos.y = pos.y - pigPosition[1];
+                  pos.z = pos.z - pigPosition[2];
+      
+                  float k = deformPig;
+                  float maxy = 4.0;
+                  float miny = 0.0;
+                  float sy = (maxy - (pos.y * k)) / (maxy - (miny * k));
+                  pos.x = sy * pos.x;
+                  pos.z = sy * pos.z;
+      
+                  //set positions normally again
+                  pos.x = pos.x + pigPosition[0];
+                  pos.x = pos.x + 2.0;
+                  pos.y = pos.y + pigPosition[1];
+                  pos.z = pos.z + pigPosition[2];
+      
+                  gl_Position = projMatrix * viewMatrix * pos;
+              }
+              else {
+                  gl_Position = projMatrix * viewMatrix * worldPos;
+              }
+          }
+      }
     </script>
 
     <script id="fshader" type="x-shader/x-fragment">
-        precision mediump float;
-        
-        varying vec3 fNormal;
-        varying vec3 fLight;
-        varying vec3 fView;
-        varying vec4 fColor;
+      precision mediump float;
 
-        uniform vec4 ambientProduct;
-        uniform vec4 diffuseProduct;
-        uniform vec4 specularProduct;
-        uniform float shininess;
-
-        void main() {
+      varying vec3 fPosition;
+      varying vec3 fNormal;
+      varying vec3 fLight;
+      varying vec3 fView;
+      varying vec4 fColor;
+      varying vec2 fTexCoord;
+      
+      uniform vec4 ambientProduct;
+      uniform vec4 diffuseProduct;
+      uniform vec4 specularProduct;
+      uniform float shininess;
+      uniform bool isSkybox;
+      uniform samplerCube texMap;
+      
+      void main() {
+          if (isSkybox) {
+            gl_FragColor = textureCube(texMap, normalize(fPosition));
+          } else {
             // Normalize vectors
             vec3 N = normalize(fNormal);
             vec3 L = normalize(fLight);
             vec3 V = normalize(fView);
             vec3 H = normalize(L + V);
-
+      
             // Calculate lighting components
             float Kd = max(dot(L, N), 0.0);
             vec4 diffuse = Kd * diffuseProduct * fColor;
-
+      
             float Ks = pow(max(dot(N, H), 0.0), shininess);
             vec4 specular = Ks * specularProduct;
-
+      
             vec4 ambient = ambientProduct * fColor;
-
+      
             // Combine lighting components
             gl_FragColor = ambient + diffuse + specular;
             gl_FragColor.a = 1.0;
-        }
+          }
+      }
     </script>
 
     <script type="text/javascript" src="lib/webgl-utils.js"></script>
@@ -121,6 +141,7 @@
     <script type="text/javascript" src="lib/spline.js"></script>
     <script type="text/javascript" src="lib/quaternion.js"></script>
     <script type="text/javascript" src="lib/physics.js"></script>
+    <script type="text/javascript" src="lib/skybox.js"></script>
     <script type="text/javascript" src="lib/model.js"></script>
     <script type="text/javascript" src="anim.js"></script>
 

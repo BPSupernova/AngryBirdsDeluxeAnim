@@ -60,6 +60,21 @@ let horizontalAngleNode;
 // Variable for launch sound
 let launchSound = new Audio('/Audio/angrybirdslaunch.mp3');
 
+// Variables for the skybox
+let cubeMap;
+let skyboxPoints = [];
+let skyboxTextures = [];
+let skyboxImagesLoaded = 0;
+let skyboxImageBitmaps = [];  // Stores ImageBitmaps
+let skyboxFaces = [
+    "AngryBirdBackground.jpg",
+    "AngryBirdBackground.jpg",
+    "AngryBirdBackground.jpg",
+    "AngryBirdBackground.jpg",
+    "AngryBirdBackground.jpg",
+    "AngryBirdBackground.jpg"
+];
+
 function main() {
     canvas = document.getElementById('webgl');
     gl = WebGLUtils.setupWebGL(canvas);
@@ -77,6 +92,9 @@ function main() {
     program = initShaders(gl, "vshader", "fshader");
     gl.useProgram(program);
     
+    fillCube();
+    initializeSkyboxShaderLocations();
+
     // Set up matrices
     viewMatrix = lookAt(vec3(5, 5, 15), vec3(5, 3, 0), vec3(0, 1, 0));
     projMatrix = perspective(45, canvas.width/canvas.height, 0.1, 400);
@@ -169,6 +187,34 @@ function main() {
         }
     });
 
+    configureDefaultCubeMap();
+    skyboxFaces.forEach((src, index) => {
+        let image = new Image();
+        image.crossOrigin = "anonymous";
+        image.src = src;
+    
+        image.onload = async () => {  // Runs when an image is fully loaded
+            try {
+                let bitmap = await createImageBitmap(image);  // Convert the image to ImageBitmap
+                skyboxImageBitmaps[index] = bitmap;
+                skyboxImagesLoaded++;
+    
+                console.log(`Skybox face ${index} loaded`);
+    
+                if (skyboxImagesLoaded === skyboxFaces.length) {
+                    configureSkybox(skyboxImageBitmaps); // Configures the skybox once all images are loaded
+                    console.log("All skybox images loaded and configured.");
+                }
+            } catch (error) {
+                console.error("Error creating ImageBitmap:", error);
+            }
+        };
+    
+        image.onerror = () => {
+            console.error(`Failed to load skybox texture: ${image.src}`);
+        };
+    });
+
     // Add event listener for launching the birds
     window.addEventListener('keydown', (event) => {
         if (event.code === "Space" && !animationInProgress) {
@@ -213,6 +259,8 @@ function main() {
     function render(currentTime = 0) {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+        drawSkyBox();
+        
         // Update boneMatrix1 if launching has been triggered
         updateSlingshot(currentBird);
         // Set bone matrices for bending slingshot
@@ -436,4 +484,18 @@ function createBuffer(data) {
 function setUniformMatrix(name, data) {
     let matrixLoc = gl.getUniformLocation(program, name);
     gl.uniformMatrix4fv(matrixLoc, false, flatten(data));
+}
+
+function initializeSkyboxShaderLocations() {
+    // Store attribute locations globally for the skybox to use
+    vPosition = gl.getAttribLocation(program, "vPosition");
+    vTexCoord = gl.getAttribLocation(program, "vTexCoord");
+    
+    if (vPosition === -1) {
+        console.error("vPosition attribute not found in shader");
+    }
+    
+    if (vTexCoord === -1) {
+        console.error("vTexCoord attribute not found in shader");
+    }
 }
