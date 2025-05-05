@@ -350,7 +350,6 @@ function updateSlingshot(bird) {
                 // Set up for next launch
                 pullBack = true;
                 slingshotBend = 0;
-                killPig();
             }
         }
     }
